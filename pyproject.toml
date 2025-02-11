@@ -1,0 +1,27 @@
+[project]
+name = "job-profiles-rag"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "jupyter (>=1.1.1,<2.0.0)",
+    "ipykernel (>=6.29.5,<7.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "langchain (>=0.3.18,<0.4.0)",
+    "pgvector (>=0.3.6,<0.4.0)",
+    "feast[postgres] (>=0.45.0,<0.46.0)",
+    "langchain-community (>=0.3.17,<0.4.0)",
+    "sentence-transformers (>=3.4.1,<4.0.0)",
+    "chromadb (>=0.6.3,<0.7.0)",
+    "langchain-huggingface (>=0.1.2,<0.2.0)",
+    "langchain-chroma (>=0.2.1,<0.3.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

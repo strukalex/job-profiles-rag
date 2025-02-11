@@ -158,3 +158,19 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+data/job profiles/2025-02-07_classifications.csv
+data/job profiles/2025-02-07_job_family.csv
+data/job profiles/2025-02-07_job_profile_role.csv
+data/job profiles/2025-02-07_job_profile_role_type.csv
+data/job profiles/2025-02-07_organizations.csv
+data/job profiles/2025-02-07_profiles.csv
+data/job profiles/2025-02-07_scopes.csv
+data/job profiles/2025-02-07_streams.csv
+data/job profiles/profiles_db schema.txt
+data/job profiles/profiles_query.sql
+job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/data_level0.bin
+job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/header.bin
+job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/length.bin
+job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/link_lists.bin
+job_profiles_db/chroma.sqlite3
+/job_profiles_db
