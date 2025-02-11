@@ -21,6 +21,63 @@ A Python application that creates and queries a vector store of job profiles usi
 
 `poetry install`
 
+# Detailed instructions for running in WSL
+
+Update python:
+
+`sudo apt update && sudo apt upgrade`
+
+`sudo apt upgrade python3`
+
+Install poetry:
+
+`curl -sSL https://install.python-poetry.org | python3 -`
+
+`echo 'export PATH="/home/<USER_NAME>/.local/bin:$PATH"' >> ~/.bashrc`
+
+`source ~/.bashrc`
+
+Add vs code to path in .bashrc:
+
+`export PATH="/mnt/c/Users/<USER_NAME>/AppData/Local/Programs/Microsoft VS Code/bin:$PATH"`
+
+If you get `/usr/bin/env: ‘sh’: No such file or directory`, ensure you have this in .bashrc:
+
+`export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH`
+
+Then navigate to ex.:
+
+`cd /mnt/c/Users/<USER_NAME>/GitHub/job-profiles-rag`
+
+Start vs code:
+
+`code .`
+
+Install WSL extension for vs code and restart vs code.
+
+Install Python extension (should show up under WSL: UBUNTU - INSTALLED)
+
+Run `poetry install`
+
+Get poetry environment path:
+
+`poetry env info --path`
+
+Open VS Code Command Palette (Ctrl+Shift+P) and:
+- Select "Python: Select Interpreter"
+- Choose "Enter interpreter path"
+- Paste the Poetry environment path + "/bin/python", e.g. `/home/alstruk/.cache/pypoetry/virtualenvs/job-profiles-rag-gqqwjc62-py3.10/bin/python`
+
+Install kernel for the poetry environment:
+
+`poetry run ipython kernel install --name "job-profiles-rag" --user`
+
+Then in jupyter notebook:
+- Click the kernel picker in the top right of the notebook
+- Choose the kernel matching your Poetry environment
+
+Add data folder to the root directory, so you have `/data/job profiles/2025-02-07_profiles.csv`
+
 ## Usage
 
 The project contains two Jupyter notebooks in the `notebooks` directory:
