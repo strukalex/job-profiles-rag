@@ -66,7 +66,7 @@ Get poetry environment path:
 Open VS Code Command Palette (Ctrl+Shift+P) and:
 - Select "Python: Select Interpreter"
 - Choose "Enter interpreter path"
-- Paste the Poetry environment path + "/bin/python", e.g. `/home/alstruk/.cache/pypoetry/virtualenvs/job-profiles-rag-gqqwjc62-py3.10/bin/python`
+- Paste the Poetry environment path + "/bin/python", e.g. `/home/<USER_NAME>/.cache/pypoetry/virtualenvs/job-profiles-rag-gqqwjc62-py3.10/bin/python`
 
 Install kernel for the poetry environment:
 
@@ -119,7 +119,7 @@ Main dependencies include:
 
 ## Install kubernetes dashboard
 
- `kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
+`kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
 
 `kubectl create serviceaccount admin-user -n kubernetes-dashboard`
 
