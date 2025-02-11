@@ -66,7 +66,7 @@ Get poetry environment path:
 Open VS Code Command Palette (Ctrl+Shift+P) and:
 - Select "Python: Select Interpreter"
 - Choose "Enter interpreter path"
-- Paste the Poetry environment path + "/bin/python", e.g. `/home/alstruk/.cache/pypoetry/virtualenvs/job-profiles-rag-gqqwjc62-py3.10/bin/python`
+- Paste the Poetry environment path + "/bin/python", e.g. `/home/<USER_NAME>/.cache/pypoetry/virtualenvs/job-profiles-rag-gqqwjc62-py3.10/bin/python`
 
 Install kernel for the poetry environment:
 
