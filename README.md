@@ -119,7 +119,7 @@ Main dependencies include:
 
 ## Install kubernetes dashboard
 
- `kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
+`kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
 
 `kubectl create serviceaccount admin-user -n kubernetes-dashboard`
 
