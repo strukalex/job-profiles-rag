@@ -19,6 +19,8 @@ dependencies = [
     "chromadb (>=0.6.3,<0.7.0)",
     "langchain-huggingface (>=0.1.2,<0.2.0)",
     "langchain-chroma (>=0.2.1,<0.3.0)",
+    "azure-ai-inference (>=1.0.0b8,<2.0.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
 ]
 
 
