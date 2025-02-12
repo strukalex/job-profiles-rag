@@ -1,0 +1,13 @@
+Deploy open-webui to openshift
+
+This folder contains two options - base and gpu. We can ignore gpu for now as that is not an option on openshift.
+
+To apply the kustomization files and create the objects in the namespace, run
+
+`` oc apply -k /base ``
+
+Under Admin Settings -> Connections, add the Ollama API connection as 
+
+http://ollama-service.fd34fb-dev.svc.cluster.local:11434
+
+add custom API connection under Open API connection
