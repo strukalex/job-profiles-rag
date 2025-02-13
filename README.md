@@ -11,7 +11,7 @@ A Python application that creates and queries a vector store of job profiles usi
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Poetry for dependency management
 
 ## Installation
