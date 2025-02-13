@@ -9,7 +9,6 @@ az group create --name jobstore-ai --location westus2
 All locations for resource groups:
 az account list-locations
 
-
 Install CLI extension for azure Kubernetes service:
 az extension add --name aks-preview
 az extension update --name aks-preview
@@ -24,11 +23,11 @@ Aside - all features in that namespace:
 az feature list --namespace Microsoft.ContainerService -o table
 
 Or see them via:
+
 - Going to Subscriptions
 - Selecting your subscription
 - Clicking on "Preview features" under Settings
 - Filtering the list by namespace
-
 
 Register subscription to work with Azure Container Service resources (10 mins - one-time process per subscription):
 az provider register --namespace Microsoft.ContainerService
@@ -53,16 +52,16 @@ az provider show --namespace Microsoft.ContainerService --query registrationStat
 ^ check registration again
 
 Create base AKS cluster (few mins):
-az aks create `
-    --resource-group jobstore-ai `
-    --name AKSCluster `
-    --node-count 1 `
-    --enable-addons monitoring `
-    --ssh-access disabled `
-    --node-vm-size Standard_D2s_v3 `
-    --node-osdisk-type Ephemeral `
-    --node-osdisk-size 32 `
-    --max-pods 30
+az aks create \  
+--resource-group jobstore-ai \
+--name AKSCluster \  
+--node-count 1\
+--enable-addons monitoring \  
+--ssh-access disabled \
+--node-vm-size Standard_D2s_v3 \  
+ --node-osdisk-type Ephemeral \
+--node-osdisk-size 32 \
+--max-pods 30
 
 --node-count 1: Minimum required nodes for system node pool. Cannot be 0 for initial creation. User node pools can scale to 0. Critical for base cluster functionality.
 --node-vm-size Standard_D2s_v3: Most economical VM size supporting AKS (default)
@@ -93,30 +92,48 @@ az aks start --name AKSCluster --resource-group jobstore-ai
 Delete Cluster:
 az aks delete --name AKSCluster --resource-group jobstore-ai --yes
 
-==Subsciribe to pay as you go  $$==
+==Subsciribe to pay as you go $$==
 
 To monitor $$:
 https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-9.0.102-windows-x64-installer
 dotnet tool install --global azure-cost-cli
+
 # View accumulated costs
+
 azure-cost accumulatedCost -s SUBSCRIPTION_ID
+
 # View costs by resource
+
 azure-cost costByResource -o text -s SUBSCRIPTION_ID
+
 # View all resources
+
 az resource list -o table
 az resource list --resource-group jobstore-ai -o table
+
 # Cost analysis
+
 https://portal.azure.com/#view/Microsoft_Azure_CostManagement/Menu/~/costanalysis/open/costanalysisv3/openedBy/AzurePortal
+
 # All resources
+
 https://portal.azure.com/#browse/all
+
 # VMs
+
 az vm list -d --query "[].{Name:name, PowerState:powerState}" -o table
 https://portal.azure.com/#browse/Microsoft.Compute%2FVirtualMachines
+
 # Active storage accounts:
+
 az storage account list --query "[].{Name:name, ResourceGroup:resourceGroup}" -o table
+
 # View all AKS clusters and their statuses:
+
 az aks list --query "[].{Name:name, ResourceGroup:resourceGroup, PowerState:powerState.code}" -o table
+
 # To see app services:
+
 az webapp list --query "[].{Name:name, State:state}" -o table
 
 Check cluster status:
@@ -131,23 +148,22 @@ az aks nodepool list --resource-group jobstore-ai --cluster-name AKSCluster
 View node pool details:
 az aks nodepool show --resource-group jobstore-ai --cluster-name AKSCluster --name nodepool1
 
-
 Add GPU node pool (it will not start any nodes - initialized to 0)
-az aks nodepool add `
-    --resource-group jobstore-ai `
-    --cluster-name AKSCluster `
-    --name gpunodepool `
-    --node-count 0 `
-    --node-vm-size Standard_NC4as_T4_v3 `
-    --priority Spot `
-    --eviction-policy Delete `
-    --spot-max-price -1 `
-    --node-taints sku=gpu:NoSchedule `
-    --skip-gpu-driver-install `
-    --ssh-access disabled `
-    --os-sku AzureLinux `
-    --node-osdisk-type Ephemeral `
-    --node-osdisk-size 64
+az aks nodepool add \
+ --resource-group jobstore-ai \
+ --cluster-name AKSCluster \
+ --name gpunodepool \
+ --node-count 0 \
+ --node-vm-size Standard_NC4as_T4_v3 \
+ --priority Spot \
+ --eviction-policy Delete \
+ --spot-max-price -1 \
+ --node-taints sku=gpu:NoSchedule \
+ --skip-gpu-driver-install \
+ --ssh-access disabled \
+ --os-sku AzureLinux \
+ --node-osdisk-type Ephemeral \
+ --node-osdisk-size 64
 
 --resource-group: The Azure resource group containing your AKS cluster
 --cluster-name: Name of your existing AKS cluster where this pool will be added
@@ -167,16 +183,22 @@ az aks nodepool add `
 --node-osdisk-type: Uses ephemeral storage (VM's local storage) instead of managed disk
 --node-osdisk-size: Sets OS disk to 64GB (must be ≤75% of VM's temporary storage of 176GB)
 
+To delete GPU node pool:
+az aks nodepool delete \
+ --resource-group jobstore-ai \
+ --cluster-name AKSCluster \
+ --name gpunodepool
 
 Install Nvidia GPU Operator to manage drivers (since we skipped driver install in previous step - preferred method)
 
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
-    && helm repo update
+ && helm repo update
 
 Get aks credentials for the cluster:
 az aks get-credentials --resource-group jobstore-ai --name AKSCluster
 
 On WSL, may need to:
+
 - mkdir -p ~/.kube
 - cp /mnt/c/Users/<USER>/.kube/config ~/.kube/config
 - Edit ~/.profile: add `export KUBECONFIG=~/.kube/config`
@@ -187,9 +209,9 @@ kubectl get nodes
 
 Install the operator:
 helm install --wait --generate-name \
-    -n gpu-operator --create-namespace \
-    nvidia/gpu-operator \
-    --version=v24.9.2
+ -n gpu-operator --create-namespace \
+ nvidia/gpu-operator \
+ --version=v24.9.2
 
 Can see it in Kubernetes resources -> Workloads, or run
 
@@ -199,17 +221,17 @@ Start a GPU-enabled node:
 
 First, disabled automatic scaling (better to control it manually ourselves):
 az aks nodepool update \
-    --resource-group jobstore-ai \
-    --cluster-name AKSCluster \
-    --name gpunodepool \
-    --disable-cluster-autoscaler
+ --resource-group jobstore-ai \
+ --cluster-name AKSCluster \
+ --name gpunodepool \
+ --disable-cluster-autoscaler
 
 Scale to 1 node count for GPU pool:
 az aks nodepool scale \
-    --resource-group jobstore-ai \
-    --cluster-name AKSCluster \
-    --name gpunodepool \
-    --node-count 1
+ --resource-group jobstore-ai \
+ --cluster-name AKSCluster \
+ --name gpunodepool \
+ --node-count 1
 
 If you get:
 `(ErrCode_InsufficientVCPUQuota) Insufficient vcpu quota requested 4, remaining 0 for family Standard NCASv3_T4 Family for region westus.`

@@ -21,6 +21,8 @@ dependencies = [
     "langchain-chroma (>=0.2.1,<0.3.0)",
     "azure-ai-inference (>=1.0.0b8,<2.0.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
+    "fastapi (>=0.115.8,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
 ]
 
 

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: your-registry/fastapi-app:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: AZURE_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: azure-secrets
+              key: azure-endpoint
+        - name: AZURE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: azure-secrets
+              key: azure-api-key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30

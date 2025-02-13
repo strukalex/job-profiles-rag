@@ -21,7 +21,75 @@ A Python application that creates and queries a vector store of job profiles usi
 
 `poetry install`
 
-# Detailed instructions for running in WSL
+3. Rename .env.sample into sample and set your environment variables
+
+# Running Open WebUI with local Kubernetes
+
+Follow these instructions to run a UI that allows you to run queries with the RAG pipeline
+
+## Build and run API docker image
+If dependencies changed, generate requirements.txt from poetry and copy to /backend:
+`poetry export --format=requirements.txt --output requirements.txt --without-hashes`
+
+Build docker image (run from root):
+
+`docker build -f backend/Dockerfile -t rag-backend:local .`
+
+To run the api docker image:
+
+`docker run --env-file ./.env -p 8000:8000 rag-backend:local`
+
+## Setup Kubernetes
+
+Select local context:
+`kubectl config use-context docker-desktop`
+
+To view contexts:
+`kubectl config get-contexts`
+
+Add nginx ingress controller:
+`kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/cloud/deploy.yaml`
+
+Check that ingress controller is working:
+`kubectl get pods -n ingress-nginx`
+
+Create namespace:
+`kubectl create namespace fd34fb-dev`
+
+Apply local overlay configuration:
+`kubectl apply -k kubernetes/openwebui/overlays/local`
+
+Open WebUI should be available at (ignore security warning):
+`https://kubernetes.docker.internal/`
+
+Go to `Admin Panel -> Settings -> Connections`, delete all records. Under `OpenAI API` add a new record with `http://external-api:8000/v1` for URL and
+anything for the `Key`
+
+The model should now be available on the main selection screen and querying should work.
+
+## Install kubernetes dashboard
+
+`kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
+
+`kubectl create serviceaccount admin-user -n kubernetes-dashboard`
+
+`kubectl create clusterrolebinding admin-user --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:admin-user`
+
+`kubectl -n kubernetes-dashboard create token admin-user`
+
+`kubectl proxy`
+
+Go to: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+## Notebooks Usage
+
+The project contains two Jupyter notebooks in the `notebooks` directory:
+
+1. `create_vectore_store.ipynb`: Creates the vector store from job profile data
+2. `try_vector_store.ipynb`: Demonstrates how to query the vector store
+
+
+# To run notebooks in WSL
 
 Update python:
 
@@ -78,15 +146,6 @@ Then in jupyter notebook:
 
 Add data folder to the root directory, so you have `/data/job profiles/2025-02-07_profiles.csv`
 
-## Usage
-
-The project contains two Jupyter notebooks in the `notebooks` directory:
-
-1. `create_vectore_store.ipynb`: Creates the vector store from job profile data
-2. `try_vector_store.ipynb`: Demonstrates how to query the vector store
-
-Run these notebooks to interact with the system.
-
 ## Data
 
 The `data/job_profiles` directory contains CSV files with job-related information:
@@ -97,39 +156,6 @@ The `data/job_profiles` directory contains CSV files with job-related informatio
 - Profiles
 - Scopes
 - Streams
-
-## Dependencies
-
-Main dependencies include:
-- langchain
-- chromadb
-- langchain-huggingface
-- sentence-transformers
-- jupyter
-
-# Kubeernetes Commands
- 
-## View kubernetes contexts
- 
- `kubectl config get-contexts`
-
-## Select context
-
- `kubectl config use-context docker-desktop`
-
-## Install kubernetes dashboard
-
-`kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml`
-
-`kubectl create serviceaccount admin-user -n kubernetes-dashboard`
-
-`create clusterrolebinding admin-user --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:admin-user`
-
-`kubectl -n kubernetes-dashboard create token admin-user`
-
-`kubectl proxy`
-
-Go to: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 ## License
 

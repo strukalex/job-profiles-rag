@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-api
+  namespace: fd34fb-dev
+spec:
+  type: ExternalName
+  externalName: host.docker.internal
+  ports:
+  - port: 8000
+    targetPort: 8000

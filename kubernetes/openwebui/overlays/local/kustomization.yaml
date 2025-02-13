@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base configuration
+resources:
+- ../../base
+- ingress.yaml
+- external-api.yaml
+
+# Remove unused components
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: ollama
+      namespace: fd34fb-dev
+    $patch: delete
+  target:
+    group: apps
+    version: v1
+    kind: StatefulSet
+    name: ollama
+
+- patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: ollama-service
+      namespace: fd34fb-dev
+    $patch: delete
+  target:
+    version: v1
+    kind: Service
+    name: ollama-service
+
+- patch: |-
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: open-webui-ingress
+      namespace: fd34fb-dev
+    $patch: delete
+  target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: open-webui-ingress
+
+- patch: |-
+    apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: webui-route
+      namespace: fd34fb-dev
+    $patch: delete
+  target:
+    group: route.openshift.io
+    version: v1
+    kind: Route
+    name: webui-route
+
