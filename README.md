@@ -177,3 +177,15 @@ Stop and remove the current container
 This project is licensed under the terms included in the LICENSE file.
 
 
+### Show current packages vs latest versions
+poetry show --latest
+
+### Show debug code for langchan processes
+```
+from langchain.globals import set_debug
+set_debug(True)
+```
+
+### Debug everything
+import logging
+logging.basicConfig(level=logging.DEBUG)

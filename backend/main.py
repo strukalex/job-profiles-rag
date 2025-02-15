@@ -1,8 +1,13 @@
+from dotenv import load_dotenv
+# Load environment variables
+load_dotenv()
+
 import time
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import uvicorn
 from routers.openai.router import router as openai_router
+
 
 app = FastAPI()
 

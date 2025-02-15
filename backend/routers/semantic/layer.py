@@ -1,12 +1,9 @@
-from langchain_huggingface import HuggingFaceEmbeddings
 from semantic_router import Route, RouteLayer
 from semantic_router.encoders import HuggingFaceEncoder
-# from sentence_transformers import SentenceTransformer
-# from .encoder import get_encoder
 
 class SemanticRouter:
     def __init__(self):
-        self.encoder = HuggingFaceEncoder(name='sentence-transformers/all-MiniLM-L6-v2') #SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2') #get_encoder()
+        self.encoder = HuggingFaceEncoder(name='sentence-transformers/all-MiniLM-L6-v2')
         self.routes = self._load_routes()
         self.layer = RouteLayer(
             encoder=self.encoder,
@@ -40,7 +37,17 @@ class SemanticRouter:
                 name="profile_search",
                 utterances=[
                     "which profile",
+                    "which profiles",
                     "i'm looking for job profile",
+                ],
+                handler_fn="handlers.coding.process"
+            ),
+            Route(
+                name="generate_profile",
+                utterances=[
+                    "generate profile",
+                    "make new profile",
+                    "i need a profile for software engineer"
                 ],
                 handler_fn="handlers.coding.process"
             )
