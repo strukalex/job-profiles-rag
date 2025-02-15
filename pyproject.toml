@@ -6,7 +6,7 @@ authors = [
     {name = "Your Name",email = "you@example.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "jupyter (>=1.1.1,<2.0.0)",
     "ipykernel (>=6.29.5,<7.0.0)",
@@ -23,6 +23,7 @@ dependencies = [
     "python-dotenv (>=1.0.1,<2.0.0)",
     "fastapi (>=0.115.8,<0.116.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
+    "semantic-router[local] (>=0.0.72,<0.0.73)",
 ]
 
 

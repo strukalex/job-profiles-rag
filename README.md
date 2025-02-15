@@ -39,6 +39,7 @@ To run the api docker image:
 
 `docker run --env-file ./.env -p 8000:8000 rag-backend:local`
 
+
 ## Setup Kubernetes
 
 Select local context:
@@ -127,6 +128,10 @@ Install Python extension (should show up under WSL: UBUNTU - INSTALLED)
 
 Run `poetry install`
 
+If you get `[Errno 2] No such file or directory: 'python`, you may need to create a symlink from python3 to python:
+
+`sudo ln -s /usr/bin/python3 /usr/bin/python`
+
 Get poetry environment path:
 
 `poetry env info --path`
@@ -146,18 +151,26 @@ Then in jupyter notebook:
 
 Add data folder to the root directory, so you have `/data/job profiles/2025-02-07_profiles.csv`
 
-## Data
+# Docker - other
 
-The `data/job_profiles` directory contains CSV files with job-related information:
-- Classifications
-- Job families
-- Job profile roles and types
-- Organizations
-- Profiles
-- Scopes
-- Streams
+## Open WebUI in docker
+To run open webui in docker such that it can connect to api running on localhost:
+
+`docker run -d -p 3000:8080   --add-host=host.docker.internal:host-gateway   -e OPENAI_API_BASE_URL=http://host.docker.internal:8000   -v open-webui:/app/backend/data   --name open-webui   --restart always   ghcr.io/open-webui/open-webui:main`
+
+In open webui set api url to:
+
+`http://host.docker.internal:8000/v1`
+
+## To update local openwebui image:
+
+`docker pull ghcr.io/open-webui/open-webui:main`
+
+Stop and remove the current container
+`docker rm -f open-webui`
 
 ## License
 
 This project is licensed under the terms included in the LICENSE file.
+
 
