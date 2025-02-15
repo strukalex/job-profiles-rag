@@ -21,7 +21,10 @@ A Python application that creates and queries a vector store of job profiles usi
 
 `poetry install`
 
-3. Rename .env.sample into sample and set your environment variables
+3. Register for a LLM API, such as Mistral Small through Azure Foundry
+4. Rename .env.sample into sample and set your environment variables
+5. Copy data into the root folder so you have `/data/job profiles/2025-02-07_profiles.csv`
+
 
 # Running Open WebUI with local Kubernetes
 
