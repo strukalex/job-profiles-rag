@@ -28,7 +28,7 @@ A Python application that creates and queries a vector store of job profiles usi
 
 # Running Open WebUI with local Kubernetes
 
-Follow these instructions to run a UI that allows you to run queries with the RAG pipeline. Before getting started, ensure you have `job_profiles_db` in the root by building the vector store through the `create_vectore_store.ipynb` notebook (see below).
+Follow these instructions to run a UI that allows you to run queries with the RAG pipeline. Before getting started, ensure you have `job_profiles_db2` in the root by building the vector store through the `create_vectore_store.ipynb` notebook (see below).
 
 ## Build and run API docker image
 If dependencies changed, generate requirements.txt from poetry and copy to /backend:
@@ -189,3 +189,7 @@ set_debug(True)
 ### Debug everything
 import logging
 logging.basicConfig(level=logging.DEBUG)
+
+### Add a shortcut to execute in the current Debug Console:
+
+Open keyboard shortcuts: `Ctrl+K+S`. Search for `Debug: Evaluate in Debug Console` and select a shortcut, like `Alt+Shift+E`

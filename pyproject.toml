@@ -26,6 +26,9 @@ dependencies = [
     "semantic-router[local] (>=0.0.72,<0.0.73)",
     "langchain-openai (>=0.3.5,<0.4.0)",
     "langchain-azure-ai (>=0.1.1,<0.2.0)",
+    "lark (>=1.2.2,<2.0.0)",
+    "mistral-common (>=1.5.3,<2.0.0)",
+    "matplotlib (>=3.10.0,<4.0.0)",
 ]
 
 

@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 
 # Copy job_profiles_db from root
-COPY job_profiles_db/ ./job_profiles_db/
+COPY job_profiles_db2/ ./job_profiles_db2/
 
 # Expose the port
 EXPOSE 8000

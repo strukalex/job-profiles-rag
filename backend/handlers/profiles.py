@@ -13,9 +13,9 @@ import asyncio
 
 # Initialize components
 script_dir = os.path.dirname(os.path.abspath(__file__))
-persist_dir = os.path.join(script_dir, "../..", "job_profiles_db")
+persist_dir = os.path.join(script_dir, "../..", "job_profiles_db2")
 
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embeddings = HuggingFaceEmbeddings(model_name="thenlper/gte-small")
 vectorstore = Chroma(
     persist_directory=persist_dir,
     embedding_function=embeddings,

@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
 
+from backend.handlers.draw_graph import handle_draw_graph
 from handlers.generate_profile import handle_generate_profile
 from handlers.profiles import handle_profile_analysis
 from ..semantic.layer import route_layer
@@ -44,6 +45,13 @@ async def chat_completion(request: ChatCompletionRequest):
         )
     elif route.name == "generate_profile":
         return await handle_generate_profile(
+            query=query,
+            model=request.model,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens
+        )
+    elif route.name == "draw_graph":
+        return await handle_draw_graph(
             query=query,
             model=request.model,
             temperature=request.temperature,
