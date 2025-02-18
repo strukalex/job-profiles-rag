@@ -1,0 +1,18 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: fastapi-app
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: fastapi-app:latest
+  source:
+    type: Git
+    git:
+      uri: "https://github.com/strukalex/job-profiles-rag.git"
+      ref: main
+    contextDir: backend
+  strategy:
+    type: Docker
+  runPolicy: Serial

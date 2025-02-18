@@ -1,0 +1,13 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-all-ingress-fastapi
+  namespace: fd34fb-dev
+spec:
+  podSelector:
+    matchLabels:
+      app: fastapi-app
+  ingress:
+    - {}
+  policyTypes:
+    - Ingress

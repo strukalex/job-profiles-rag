@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  labels:
+    app: fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+        - name: fastapi-app
+          image: image-registry.openshift-image-registry.svc:5000/fd34fb-dev/fastapi-app:v1
+          ports:
+            - containerPort: 8000
+          env:
+            - name: AZURE_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: azure-secrets
+                  key: AZURE_ENDPOINT
+            - name: AZURE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: azure-secrets
+                  key: AZURE_API_KEY
+            - name: TRANSFORMERS_CACHE
+              value: /app/cache
+          volumeMounts:
+            - name: job-profiles-db
+              mountPath: /app/job_profiles_db
+            - name: api-cache
+              mountPath: /app/cache
+
+      volumes:
+        - name: job-profiles-db
+          persistentVolumeClaim:
+            claimName: job-profiles-db-pvc
+        - name: api-cache
+          persistentVolumeClaim:
+            claimName: api-cache-pvc
