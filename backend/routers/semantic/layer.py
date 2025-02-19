@@ -67,6 +67,14 @@ class SemanticRouter:
                     "make a pie chart of profiles counts broken down by job family"
                 ],
                 handler_fn="handlers.coding.process"
+            ),
+            Route(
+                name="classify_profile",
+                utterances=[
+                    "classify this profile",
+                    "what is the classification for this profile"
+                ],
+                handler_fn="handlers.coding.process"
             )
         ]
 
