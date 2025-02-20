@@ -10,7 +10,7 @@ from typing import List, Optional
 
 from backend.handlers.classify_profile import handle_classify_profile
 from backend.handlers.draw_pr_graph import handle_draw_pr_graph
-from backend.handlers.draw_profiles_graph import handle_draw_graph
+from backend.handlers.draw_profiles_graph import handle_draw_profile_graph
 from backend.handlers.provide_help import handle_provide_help
 from backend.handlers.provide_self_help import handle_provide_self_help
 from handlers.generate_profile import handle_generate_profile
@@ -54,8 +54,8 @@ async def chat_completion(request: ChatCompletionRequest):
             temperature=request.temperature,
             max_tokens=request.max_tokens
         )
-    elif route.name == "draw_graph":
-        return await handle_draw_graph(
+    elif route.name == "draw_profiles_graph":
+        return await handle_draw_profile_graph(
             query=query,
             model=request.model,
             temperature=request.temperature,

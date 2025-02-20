@@ -2,6 +2,7 @@ import calendar
 import json
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
 import io
 import numpy as np
 import os
@@ -185,6 +186,7 @@ class ChartGenerator:
             'plt': plt,
             'pd': pd,
             'np': np,
+            'sns': sns,
             'df': self.df,
             'calendar': calendar,
             '__builtins__': __builtins__  # This gives access to all built-ins
@@ -197,7 +199,7 @@ class ChartGenerator:
 
 _CHART_GENERATOR = ChartGenerator("job profiles/2025-02-07_profiles.csv")
 
-async def handle_draw_graph(
+async def handle_draw_profile_graph(
     query: str,
     model: str = "Mistral-small",
     temperature: float = 0.7,

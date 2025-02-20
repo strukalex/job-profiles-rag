@@ -5,15 +5,30 @@ Exactly matches examples:
 - `Response for "Show views by role type"`
 
 Novel (simple):
-- `Show views by type`
-- `Show views by job family (top 5)`
-- `Show views distribution by organizational type`
+- `show chart of job profile views by type`
+- `Show chart of job profile views by job family (top 5)`
+- `Show chart of profile views distribution by organizational type`
+- `make a pie chart of the number of profiles by organization`
+
 - `show graph of profile creation by month`
 - `show graph of profile creation by month, add readable month names`
 - `Show graph of the number of profiles broken down by classification, ordered from highest to lowest, remove labels for classifications (y-axis)`
 - `make a pie chart of the number of profiles by organization`
 - `make a pie chart of the number of profiles by organization, use rainbow theme, include percentage values`
 - `make a pie chart of profiles counts broken down by job family apply normal color scheme, include percentages`
+
+Position request graphs:
+- `Show position request approval trends by month with a line chart`
+- `Create a stacked bar chart showing status distribution of all position requests across departments`
+- `For position requests, display a heatmap of job profiles vs organization names`
+- `show a pie chart of position requests by approval type`
+- `show a chart of position requests with completed status by ministry`
+
+Profiles search:
+- `Which roles require experience with specific cloud platforms?`
+- `What are the common years of experience required for leadership positions?`
+- `What are the most common technical skills required across all senior engineering job profiles? List the profiles`
+- `Compare responsibility differences between regular and senior full stack developers`
 
 ## Sonnet 3.5 profile analysis
 Factor 1:
