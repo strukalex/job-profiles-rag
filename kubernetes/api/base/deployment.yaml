@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: fastapi-app
-          image: image-registry.openshift-image-registry.svc:5000/fd34fb-dev/fastapi-app:v1
+          image: image-registry.openshift-image-registry.svc:5000/fd34fb-dev/fastapi-app:v2
           ports:
             - containerPort: 8000
           env:
