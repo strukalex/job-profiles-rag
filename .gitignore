@@ -168,6 +168,7 @@ data/job profiles/2025-02-07_scopes.csv
 data/job profiles/2025-02-07_streams.csv
 data/job profiles/profiles_db schema.txt
 data/job profiles/profiles_query.sql
+data/
 job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/data_level0.bin
 job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/header.bin
 job_profiles_db/6625340b-d5cc-4a13-84ac-0c5d6925ba28/length.bin

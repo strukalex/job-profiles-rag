@@ -193,3 +193,17 @@ logging.basicConfig(level=logging.DEBUG)
 ### Add a shortcut to execute in the current Debug Console:
 
 Open keyboard shortcuts: `Ctrl+K+S`. Search for `Debug: Evaluate in Debug Console` and select a shortcut, like `Alt+Shift+E`
+
+### To set custom graphics
+
+```
+docker cp backend/assets/splash.png open-webui:/app/backend/open_webui/static/splash.png
+
+docker cp backend/assets/square/android-chrome-192x192.png open-webui:/app/backend/open_webui/static/favicon.png
+
+docker cp backend/assets/square/android-chrome-512x512.png open-webui:/app/backend/open_webui/static/logo.png
+
+docker cp backend/assets/square/favicon.ico open-webui:/app/build/favicon/favicon.ico
+
+docker cp backend/assets/square/android-chrome-192x192.png open-webui:/app/build/favicon/favicon-96x96.png
+```

@@ -28,7 +28,7 @@ async def list_models():
     return JSONResponse(content={
         "object": "list",
         "data": [{
-            "id": "job-profile-rag",
+            "id": "JobStore AI",
             "object": "model",
             "created": int(time.time()),
             "owned_by": "your-company"

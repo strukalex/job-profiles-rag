@@ -154,13 +154,9 @@ class ChartGenerator:
             ```
 
             Other documentation:
-            - Applying colormap:
+            - Create pie chart:
             ```
-            # Generate colors using rainbow colormap properly
-            colors = plt.cm.rainbow(np.linspace(0, 1, len(org_counts)))
-
-            # Create pie chart
-            plt.pie(org_counts, labels=org_counts.index, colors=colors)
+            plt.pie(org_counts, labels=org_counts.index)
             ```
             
 

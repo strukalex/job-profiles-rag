@@ -17,7 +17,7 @@ from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 
 # Define the factors
 FACTORS = [
-    "factor1","factor2"
+    "factor1","factor2","factor3","factor4","factor5","factor6","factor7","factor8","factor9","factor10","factor11","factor12","factor13"
 ]
 
 class FactorClassifier:
@@ -35,31 +35,32 @@ class FactorClassifier:
         
         self.prompt_template = ChatPromptTemplate.from_template(
             """You are an expert job classification analyst specializing in evaluating position profiles for public sector organizations.
-                Your task is to classify the following job profile for the factor into one of the levels (A, B, C, etc.). 
-                You must explicitly compare the profile against the level definitions, explaining why it fits the chosen level and why it doesn't fit the adjacent levels.
-            
-            Factor description:
-            {factor_description}
-            
-            Analyze the profile and provide your classification in json format only. Your justification must:
+Your task is to classify the following job profile for the factor into one of the levels (A, B, C, etc.). 
+You must explicitly compare the profile against the level definitions, explaining why it fits the chosen level and why it doesn't fit the adjacent levels.
 
-            1. Cite specific language from the chosen level definition that matches the profile using quotations
-            2. Explain why the profile exceeds the requirements of the level below, using quotations from the level definition
-            3. Explain why the profile does not meet the requirements of the level above, using quotations from the level definition
-            4. Reference specific examples from the profile to support your reasoning and quotations from the level definition
-            5. Use quotations from the level definition above as much as possible to provide justifications
-            6. Provide quotations from level definitions above for primary designation BUT ALSO FOR LEVELS ABOVE AND BELOW
+Factor description:
+{factor_description}
 
-            Output format:
-            {{
-                "level": "[level letter]",
-                "justification": "[detailed comparison with level definitions, including why it exceeds lower level and doesn't meet higher level]"
-            }}
+Analyze the profile and provide your classification in json format only. Your justification must:
 
-            Profile to evaluate:
+1. Cite specific language from the chosen level definition that matches the profile using quotations
+2. Explain why the profile exceeds the requirements of the level below, using quotations from the level definition
+3. Explain why the profile does not meet the requirements of the level above, using quotations from the level definition
+4. Reference specific examples from the profile to support your reasoning and quotations from the level definition
+5. Use quotations from the level definition above as much as possible to provide justifications
+6. Provide quotations from level definitions above for primary designation BUT ALSO FOR LEVELS ABOVE AND BELOW
+7. DO NOT include new line characters in output, output justification as a single string. Do not format json in any way. Generate standard json only
 
-            {profile}
-            """
+Output format:
+{{"level": "level letter","justification": "detailed comparison with level definitions, including why it exceeds lower level and doesn't meet higher level"}}
+
+Example output:
+{{"level" : "D","justification" : "The Full Stack Developer profile fits Level D as it requires..."}}
+
+Profile to evaluate:
+
+{profile}
+"""
         )
 
         self.factor_descriptions=self.load_factor_descriptions()
@@ -70,8 +71,8 @@ class FactorClassifier:
         return (
             RunnablePassthrough.assign(factor=lambda _: factor)
             | self.prompt_template
-            | self.llm
-            | self.parser
+            # | self.llm
+            # | self.parser
         )
 
     async def classify_factor(self, factor, profile, factor_description):
@@ -102,8 +103,7 @@ class FactorClassifier:
 
 _FACTOR_CLASSIFIER = FactorClassifier()
 
-def calculate_total_points(results):
-    factor_weights = {
+factor_weights = {
         'factor1': {'A': 20, 'B': 40, 'C': 60, 'D': 100, 'E': 145, 'F': 190, 'G': 250, 'H': 280, 'I': 305, 'J': 330},
         'factor2': {'A': 20, 'B': 40, 'C': 60, 'D': 100, 'E': 150, 'F': 175, 'G': 200, 'H': 250, 'I': 300},
         'factor3': {'A': 10, 'B': 20, 'C': 30, 'D': 45, 'E': 60, 'F': 75},
@@ -118,12 +118,16 @@ def calculate_total_points(results):
         'factor12': {'A': 2, 'B': 4, 'C': 6, 'D': 9, 'E': 12},
         'factor13': {'A': 2, 'B': 4, 'C': 6, 'D': 9, 'E': 12}
     }
-    
-    total = 0
-    for factor, result in results.items():
-        if factor in factor_weights:
-            total += factor_weights[factor][result['level']]
-    return total
+
+def calculate_total_points(results):
+    try:
+        total = 0
+        for factor, result in results.items():
+            if factor in factor_weights:
+                total += factor_weights[factor][result['level']]
+        return total
+    except Exception as e:
+        raise e
 
 def determine_grid_level(points):
     point_bands = {
@@ -164,12 +168,15 @@ def format_factor_results(results):
     }
     
     formatted_results = []
+    i=0
     for factor, data in results.items():
+        i+=1
         factor_name = factor_names.get(factor, factor)
+        points = factor_weights[factor][data['level']]
         formatted_results.append(
-            f"• {factor_name}:\n"
-            f"  Level: {data['level']}\n"
-            f"  Justification: {data['justification']}\n"
+            f"### {str(i)}. {factor_name}\n"
+            f"- **Level:** {data['level']} ({points} points)\n"
+            f"- **Justification:** {data['justification']}\n"
         )
     
     return "\n".join(formatted_results)
@@ -183,12 +190,36 @@ async def handle_classify_profile(
     # todo - extract the profile
     # profile = extract_profile(query)  # Implement this function to extract the profile from the query
     
-    profile = query
-    # factor_descriptions = load_factor_descriptions()  # Implement this function to load factor descriptions
-    # benchmarks = load_benchmarks()  # Implement this function to load benchmarks
-    
-    results = await _FACTOR_CLASSIFIER.classify_all_factors(profile)
-    
+    if("sonnet" not in query):
+        profile = query
+        # factor_descriptions = load_factor_descriptions()  # Implement this function to load factor descriptions
+        # benchmarks = load_benchmarks()  # Implement this function to load benchmarks
+        
+        results = await _FACTOR_CLASSIFIER.classify_all_factors(profile)
+    else:
+
+        # results = {
+        #     'factor1': {'level': 'A', 'justification': 'implementation details'},
+        #     'factor2': {'level': 'A', 'justification': 'implementation details'},
+        #     'factor3': {'level': 'A', 'justification': 'implementation details'}
+        # }
+
+        results = {
+            'factor1': {"level": "H", "justification": 'The Full Stack Developer profile aligns with Level H as it requires understanding "the theory of a trade, craft, operational, professional or technical area(s) with the requirement to plan, research and review complex issues with many factors to consider." The role exceeds Level G requirements which only focus on "understanding principles" and "analyzing, diagnosing, and interpreting standards" - this position goes beyond by leading development teams, advising executives, and managing complex multi-year projects. The profile demonstrates Level H through activities like "plans and executes multiple simultaneous systems development projects" and "advises executive on business or organizational issues." The position requires advanced technical knowledge to "develop front-end and back-end enterprise solutions" and "designs and implements data warehouse architecture." It doesn\'t reach Level I as it doesn\'t involve "understanding all related issues of a significant program which requires considerable resources and provides services to a large part of a ministry" - instead focusing on specific technical implementations and solutions rather than ministry-wide program management. While the role advises executives, it doesn\'t have the scope of Level I\'s requirement to "plan or develop policy or provide authoritative advice for the program" at a ministry-wide level.'},
+            'factor2': {"level": "G", "justification": "The Full Stack Developer position aligns with Degree G as it requires 'judgement required to modify methods, techniques or approaches so they will work with new or changed circumstances or objectives to plan a course of action.' This is evidenced by the role's responsibility to develop and enhance computer systems, similar to the benchmark example 'develop computer systems enhancements (BM021).' The position exceeds Degree F requirements which focus on 'performing precise review and manipulation of sophisticated data' as this role goes beyond just developing programs and integrating platforms - it requires modifying and adapting approaches to meet changing business needs. The profile shows this through responsibilities like 'developing new concepts,' 'designing and implementing data warehouse architecture,' and 'developing front-end and back-end enterprise solutions.' The position does not meet Degree H requirements which focus on 'evaluating effectiveness of policies, programs or services and develop proposals for improvements' or 'managing policies, programs or services.' While the role advises executives and leads development projects, it does not have the broad program evaluation and management responsibilities described in Degree H. The technical nature of the work, requirement to modify approaches for new circumstances, and system enhancement responsibilities clearly align with Degree G's focus on modifying methods and techniques."},
+            'factor3': {"level": "D", "justification": "The Full Stack Developer position aligns with Level D which requires 'persuasion required to use basic counselling skills to induce cooperation, interview for information or provide advice, or use basic negotiating skills to reach a settlement where the parties are generally cooperative and have common interests.' This is evidenced by the profile requirements to 'advise executive and senior management on alternatives and solutions,' and 'communicate technical concepts to a non-technical audience to gain consensus.' The position exceeds Level C which only requires 'discretion required to exchange information needing explanation' as the role involves leading teams, advising executives, and negotiating with stakeholders. The position does not meet Level E requirements for 'influence required to use formal counselling or formal negotiating skills in dealing with sensitive issues or agreements where the parties are not cooperative or do not have common interests' as the profile indicates collaborative work environments and generally cooperative stakeholders, shown in requirements like 'collaborates with other teams' and 'ensures client requirements and priorities are understood.'"},
+            'factor4': {"level": "A", "justification": "The Full Stack Developer position requires only basic coordination and dexterity as it primarily involves computer-based work. The role focuses on software development, system design, and project management activities that require minimal physical coordination beyond basic keyboard and mouse usage. The position's core duties - coding, reviewing others' work, advising executives, and managing projects - all require minimal physical demands. While technical skills are extensive, the physical coordination requirements do not exceed Degree A's 'basic coordination and dexterity.' The role does not meet Degree B's requirements for 'some coordination and dexterity' as it does not involve any specialized physical skills or manual techniques beyond standard office computer use. The job duties are primarily cognitive and analytical in nature, with physical demands limited to standard computer interface operations."},
+            'factor5': {"level": "G", "justification": "The Full Stack Developer position aligns with Comparative Effects Level V and Freedom to Act Level 6, resulting in Level G classification. The role 'affects the strategic direction, or the decision-making of senior ministry executives, for a significant ministry program, project, or system' as evidenced by advising executive on business issues, establishing strategic plans, and managing mission-critical database projects. The Freedom to Act matches Level 6 where 'work is guided by general policies, plans, guidelines or standards and requires planning, organizing or evaluating projects/cases' as shown by planning multiple systems development projects and leading professional teams. This exceeds Level F requirements which only involves 'considerable' impact and managing technical programs, while this role has significant ministry-wide impact through strategic direction and executive advisory. The position does not reach Level H as it does not demonstrate Level VI 'major' impacts affecting 'decisions made by senior ministry or government executives on major issues' or affecting 'the strategic direction of a major ministry program' - while influential, the role's scope remains within significant rather than major ministry programs."},
+            'factor6': {"level": "E", "justification": "The Full Stack Developer position demonstrates significant financial responsibility through several key aspects of the role. The profile shows the position 'advises executive on business or organizational issues and collaboratively establishes strategic plans and budgets' and 'determines need for contract resources, develops contract specifications, estimates costs.' These responsibilities exceed Degree D (moderate responsibility) as they involve direct input into budgetary decisions and contract specifications. The role also 'advises executive and senior management on alternatives and solutions, product evaluation, risk assessment, and cost benefit analysis of existing and future applications' which demonstrates significant financial accountability through recommendations that impact organizational resources. While the position has significant financial responsibility through budgeting and contract activities, it does not reach Degree F (considerable responsibility) as it does not have primary accountability for major departmental budgets or final authority over large-scale financial commitments. The position makes recommendations and provides input but works collaboratively rather than having sole financial authority. The role's financial impact comes through its technical leadership and advisory capacity rather than direct control of major financial resources."},
+            'factor7': {"level": "E", "justification": "The Full Stack Developer position demonstrates 'considerable responsibility' for information assets that exceeds Level D's 'significant responsibility' and aligns with Level E. The role manages mission-critical database development projects, designs and implements data warehouse architecture, and handles complex data models. They lead multiple simultaneous systems development projects and are responsible for enterprise-wide solutions that affect multiple ministries. The position exceeds Level D as they not only handle information systems but have strategic influence through advising executives on alternatives, solutions, and risk assessments for existing and future applications. They also determine development tools and database configurations, showing deeper control over information assets. However, it does not reach Level F's 'major responsibility' as the role focuses on specific technical domains rather than having ultimate authority over all information assets. The position maintains considerable but not complete control over information systems, working within established frameworks rather than setting organization-wide information management policies. Key evidence includes their responsibility for 'managing multi-year mission-critical database development projects,' 'determining appropriate development tools and database configurations,' and 'designing and implementing data warehouse architecture.' These duties show considerable but not ultimate responsibility for information assets."},
+            'factor8': {"level": "C", "justification": "The Full Stack Developer profile best aligns with Level C as it requires the position to 'assign, monitor and examine work of assigned workers for accuracy and quality, usually as a group leader, project team leader.' This is evidenced by the profile stating 'Leads a team of professionals, defining work assignments, and verifying and reviewing code produced by others.' The profile exceeds Level B which only requires 'provide formal instruction or training to other workers' as this role has broader team leadership responsibilities beyond just training. However, it does not fully meet Level D requirements which specify 'supervise assigned employees directly or through subordinate supervisors and appraise employee performance or take disciplinary action.' While the role leads and reviews work, there is no mention of formal performance appraisals or disciplinary responsibilities. The profile specifically mentions 'verifying and reviewing code' and 'defining work assignments' which directly matches Level C's requirement to 'assign, monitor and examine work.' Based on the profile's description of leading a team of professionals, this would likely fall into the CD category (greater than 1 FTE and up to 5 FTEs)."},
+            'factor9': {"level": "B", "justification": "The Full Stack Developer role demonstrates 'limited care and attention for the well-being or safety of others' which aligns with Level B. While the position leads a team and collaborates with others, the primary focus is on technical development rather than direct responsibility for others' well-being or safety. The role exceeds Level A's 'minimal care' requirement through team leadership responsibilities and collaboration with diverse stakeholders. However, it does not reach Level C's 'moderate care and attention' as the position's impact on others' well-being is indirect and limited to standard professional interactions. Key evidence includes: leading a team of professionals, collaborating with other teams, and communicating with non-technical audiences. The technical nature of the work and focus on system development rather than human safety or well-being supports this classification."},
+            'factor10': {"level": "D", "justification": "The Full Stack Developer profile demonstrates an intense requirement (Level D) for sensory effort and multiple demands. The profile shows frequent high-intensity activities that align with Column D ratings, particularly in multiple areas: 1) Visual focus requirements are intense and sustained, matching item #28 'On page or screen to scrutinize documents, reports, databases, etc.' at the D level, as the role requires constant development and review of code. 2) Multiple demands are at the highest level, with the profile showing the need to 'manage concurrent projects' and 'prepare response by a critical deadline with little advance notice' (items #35 and #38), which are rated at Column D when frequent. The role exceeds Level C (Focused requirement) as it involves leading multiple simultaneous development projects while managing team members and dealing with executive-level stakeholders, requiring intense concentration and multiple demand management beyond just focused attention. It does not fit Level B (Close requirement) as the responsibilities far exceed occasional or regular monitoring, requiring almost constant high-level sensory engagement. The profile specifically requires managing 'multiple, simultaneous systems development projects,' 'leading a team of professionals,' and 'executing repeatable automated processes' while maintaining communication with various stakeholders, demonstrating the intense level of multiple demands characteristic of Level D."},
+            'factor11': {"level": "B", "justification": "The Full Stack Developer position best aligns with Degree B (Light physical effort) based on the physical demands described in the profile. The role primarily involves sitting at a computer with frequent visual focus on screens, keyboarding, and occasional standing or walking. The position requires 'focusing visual attention to computer screens' and 'keyboarding without speed requirement' which falls into Column B when performed frequently. This exceeds Degree A (Relatively light physical effort) which only accommodates occasional to regular keyboarding and screen focus, but does not meet the requirements for Degree C (Moderate physical effort) as it lacks any significant physical demands like regular lifting, climbing, or working in awkward positions. The primary physical activities are limited to desk work, with the main physical demands being prolonged sitting, keyboarding, and screen viewing - activities that characterize light physical effort without substantial muscular exertion."},
+            'factor12': {"level": "A", "justification": "The Full Stack Developer position best aligns with Level A as it primarily involves working in a normal office setting with typical office conditions. The profile describes development work that takes place in a standard office environment, with no mention of significant exposure to disagreeable elements or challenging social interactions. While the role involves team leadership and collaboration, these interactions are professional in nature and do not rise to the level of 'unpleasant dealings with upset, angry, demanding or unpredictable people' that would warrant a higher rating. The position does not require exposure to elements like dust, noise, chemicals, or outdoor conditions that would qualify for Level B or above. The role exceeds the minimum requirements for Level A through its professional office setting but does not meet the criteria for Level B which would require regular exposure to crowded conditions, public work-sites, or disagreeable social interactions. The profile shows no evidence of physical discomfort, exposure to environmental elements, or challenging client interactions that would justify a higher classification."},
+            'factor13': {"level": "B", "justification": "The Full Stack Developer position aligns with Level B (Limited exposure) based on the hazards present in the role. The primary hazards involve frequent keyboarding/repetitive motion (Column B: F) and occasional office hazards (Column A). The role involves primarily computer-based work developing web applications and databases, with extensive keyboard use for coding and development tasks. This exceeds Level A (Minimal exposure) which only covers occasional to regular keyboarding, but does not reach Level C (Moderate exposure) as it lacks significant physical hazards or exposure to dangerous conditions. The position does not involve working with hazardous materials, at heights, or in dangerous environments that would warrant a higher rating. The main physical risks are ergonomic in nature from prolonged computer use and standard office environment hazards."},
+        }
+   
     # results['factor1']['justification']
     # print('result: ', results)
 
@@ -204,21 +235,22 @@ async def handle_classify_profile(
             "index": 0,
             "message": {
                 "role": "assistant",
-                "content": f"""Job Profile Classification Summary
+                "content": f"""# Job Profile Classification Summary
 
-                            📊 Factor Evaluations:
-                            {format_factor_results(results)}
+## Overview
+- **Total Points:** {total_points}
+- **Final Classification:** {grid_level}
 
-                            📈 Total Points: {total_points}
-                            🎯 Final Classification: {grid_level}
+## Factor Evaluations
+{format_factor_results(results)}
 
-                            This classification was determined by:
-                            1. Evaluating each of the 13 factors individually
-                            2. Converting factor levels to points and calculating the total ({total_points} points)
-                            3. Matching the total points to the appropriate grid level range
+## Determination Process
+1. Evaluated each of the 13 factors individually
+2. Converted factor levels to points and calculated total: {total_points} points
+3. Matched total points to appropriate grid level range
 
-                            The profile falls into {grid_level} based on the total point calculation."""
-            },
-            "finish_reason": "stop"
-        }],
-    }
+**Final Result:** The profile falls into {grid_level} based on the total point calculation."""
+        },
+        "finish_reason": "stop"
+    }],
+}

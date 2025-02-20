@@ -365,7 +365,7 @@ class JobProfileGenerator:
             doc_tokens = self.count_tokens(document.page_content)
             
             # Check if adding this document would exceed token limit
-            if total_tokens + doc_tokens <= 4000:
+            if total_tokens + doc_tokens <= 3500:
                 processed_docs.append(document.page_content)
                 total_tokens += doc_tokens
             else:
