@@ -1,17 +1,37 @@
-## Drag graph examples
+## Prompts
 
-Exactly matches examples:
-- `Show top 5 organizations by total views`
-- `Response for "Show views by role type"`
+Jobstore Q&A
+- `What can I do in JobStore`
+- `How do I create a new position?`
+
+JobStore AI Help
+- `Tell me about yourself`
+- `List what I can do with you?`
+
+Profiles search:
+- `Which profiles have software development qualities?`
+- `What are the common years of experience required for leadership positions?`
+- `What are the most common technical skills required across all senior engineering job profiles? List the profiles`
+- `Compare responsibility differences between regular and senior full stack developers`
+- `Which jobs are most adrenaline inducing`
+- `Which jobs are most fun`
+- `what exactly does "Carrier Safety Inspector" do?`
+- `What are other jobs that are similar to "Carrier Safety Inspector"?`
+- `Are there any profiles that deal with nuclear technology?`
+
+Profile generation:
+- `Can you generate a profile for nuclear scientist`
+- `Can you make a profile for a senior full stack developer who works in nursing?`
+
 
 Novel (simple):
 - `show chart of job profile views by type`
 - `Show chart of job profile views by job family (top 5)`
 - `Show chart of profile views distribution by organizational type`
 - `make a pie chart of the number of profiles by organization`
+- `show graph of profile creation by month, add readable month names`
 
 - `show graph of profile creation by month`
-- `show graph of profile creation by month, add readable month names`
 - `Show graph of the number of profiles broken down by classification, ordered from highest to lowest, remove labels for classifications (y-axis)`
 - `make a pie chart of the number of profiles by organization`
 - `make a pie chart of the number of profiles by organization, use rainbow theme, include percentage values`
@@ -20,15 +40,62 @@ Novel (simple):
 Position request graphs:
 - `Show position request approval trends by month with a line chart`
 - `Create a stacked bar chart showing status distribution of all position requests across departments`
-- `For position requests, display a heatmap of job profiles vs organization names`
+- `For position requests, display a heatmap of job profiles vs ministry names`
 - `show a pie chart of position requests by approval type`
 - `show a chart of position requests with completed status by ministry`
 
-Profiles search:
-- `Which roles require experience with specific cloud platforms?`
-- `What are the common years of experience required for leadership positions?`
-- `What are the most common technical skills required across all senior engineering job profiles? List the profiles`
-- `Compare responsibility differences between regular and senior full stack developers`
+Profile classification:
+
+```
+Can you classify this profile?
+
+TITLE: FULL STACK DEVELOPER
+JOB OVERVIEW
+To lead the development and delivery of scalable web applications in a continuous deployment environment. To develop front-end and back-end enterprise solutions on a variety of platforms. To ensure client requirements and priorities are understood and met throughout the life cycle of the development project.
+ACCOUNTABILITIES
+● Plans and executes multiple, simultaneous systems development projects, including defining objectives, priorities, timelines, and resource requirements.
+● Leads a team of professionals, defining work assignments, and verifying and reviewing code produced by others.
+● Advises executive and senior management on alternatives and solutions, product evaluation, risk assessment, and cost benefit analysis of existing and future applications.
+● Determines the most appropriate development tools and database configurations for applications, coordinating required product upgrades and enhancements.
+● Manages multi-year mission-critical database development projects, and designs and implements data warehouse architecture, and strategies and methods for complex data models.
+● Advises executive on business or organizational issues and collaboratively establishes strategic plans and budgets that involve development of new systems that will affect other ministries and external organizations.
+● Performs high-level analysis of program/systems solutions including developing new concepts, identifying impacts and internal and external linkages, and consulting with internal and external systems professionals.
+● Ensures client requirements and priorities are understood and met throughout the life cycle of the development project.
+● Determines need for contract resources, develops contract specifications, estimates costs and functions as subject matter expert on working groups and committees.
+● Develops front-end (user interface) and back-end (database) enterprise solutions on a variety of platforms using mobile-first and test-driven design processes.
+● Conducts analysis, design, and implementation of applications to meet user requirements and design specifications.
+● Assesses client requirements and underlying infrastructure applications, systems, and processes, and converts those to a system design plan.
+● Executes repeatable automated processes for building applications, testing, documenting, and deploying at scale.
+● Collaborates with other teams in and across the organizational agile environment to accomplish goals.
+● Communicates technical concepts to a non-technical audience to gain consensus on changes to requirements and specifications.
+JOB REQUIREMENTS
+Education and Experience
+● Minimum five years of experience as an Full Stack Developer.
+Related Experience may include
+● Minimum five years of experience as an Full Stack Developer.
+Knowledge, Skills and Abilities
+● Knowledge of API (Application Programming Interfaces) development and integration and continuous development environments.
+● Knowledge in frontend and backend development.
+● Knowledge of version control technologies such as subversion and Git and development in an open-source environment.
+● Knowledge of relational and non-relational databases.
+● Knowledge of agile software development methodologies.
+● Analytical, interpretative, and problem-solving skills.
+● Ability to use a variety of modern development tools, such as HTML, CSS (Cascading Style Sheets) and JavaScript libraries, relational and non-relational databases.
+Security Screenings
+● Successful completion of security screening requirements of the BC Public Service, which may include a criminal records check, and/or Criminal Records Review Act (CRRA) check, and/or enhanced security screening checks as required by the ministry (Note: It is important that you read the job posting carefully to understand the specific security screening requirements pertaining to the position).
+INDIGENOUS RELATIONS AND BEHAVIOURAL COMPETENCIES
+● Continuous development involves proactively taking actions to improve personal capability. It also involves being willing to assess one’s own level of development or expertise relative to one’s current job, or as part of focused career planning.
+● Results orientation is a concern for surpassing a standard of excellence. The standard may be one’s own past performance (striving for improvement), an objective measure (achievement orientation), challenging goals that one has set, or even improving or surpassing what has already been done (continuous improvement). Thus, a unique accomplishment also indicates a results orientation.
+● Innovation indicates an effort to improve performance by doing or promoting new things, such as introducing a previously unknown or untried solution or procedure to the specific area or organization.
+● Solving problems creatively involves knowledge and skills in fostering creative problem solving in the organization through critical reflection, problem analysis, risk assessment and rewarding innovation.
+● Teamwork and cooperation is the ability to work cooperatively within diverse teams, work groups and across the organization to achieve group and organizational goals. It includes the desire and ability to understand and respond effectively to other people from diverse backgrounds with diverse views.
+● Commitment to continuous learning involves a commitment to think about the ongoing and evolving needs of the organization and to learn how new and different solutions can be utilized to ensure success and move the organization forward.
+● Commitment is visibly putting into action your stated commitments. It means "walking the talk" and following through. It includes communicating information and intentions openly, honestly and regularly, and welcoming the same in others. It is consistently demonstrating ethical behaviour (such as honouring confidentiality and speaking the truth) so that Indigenous people know what to expect and can trust that action will follow your statement of commitment. It also means anticipating the level of knowledge and understanding needed and proactively gaining the knowledge prior to entering into relationships with Indigenous people.
+● Ingenuity is the quality of being inventive and creative when faced with a variation in BC Public Service objectives and those of Indigenous peoples. It involves dealing with problems in original and creative ways that seek commonalities and links rather than gaps and differences. It is approaching issues with a willingness to question one's assumptions and to take risks outside of common ways of thinking and doing. The value of courage may be strongly demonstrated when using ingenuity.
+```
+
+- `Now classify that profile using sonnet 3.5 model`
+
 
 ## Sonnet 3.5 profile analysis
 Factor 1:

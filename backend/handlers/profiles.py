@@ -7,6 +7,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from azure.ai.inference import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
+from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
+from mistral_common.protocol.instruct.request import ChatCompletionRequest
+from mistral_common.protocol.instruct.messages import UserMessage
 import asyncio
 
 
@@ -28,14 +31,53 @@ client = ChatCompletionsClient(
     model="Mistral-small"
 )
 
+encoder = MistralTokenizer.from_model("mistral-small", strict=True)
+
+def count_tokens(text: str) -> int:
+    return len(encoder.encode_chat_completion(
+        ChatCompletionRequest(
+            messages=[UserMessage(content=text)],
+            model="mistral-small-latest"
+        )
+    ).tokens)
+
+def print_document_simple(doc):
+    """Print document details"""
+    print("\n DOCUMENT: " + "="*80)
+    print("-"*80)
+    print(doc.page_content)
+    print("="*80 + "\n")
+
 async def get_context(query: str, k: int = 3):
-    """Retrieve contextual documents from vector store"""
+    """Retrieve contextual documents from vector store with token limiting"""
     loop = asyncio.get_event_loop()
     context_docs = await loop.run_in_executor(
         None,
-        lambda: vectorstore.similarity_search(query, k)
+        lambda: vectorstore.similarity_search(
+            'Accountabilities/Education/Job Experience/Professional Registration Requirements/Willingness Statements/Security Screenings' + query,
+            k=20
+        )
     )
-    return "\n\n".join([doc.page_content for doc in context_docs])
+
+    total_tokens = 0
+    processed_docs = []
+    
+    for idx, document in enumerate(context_docs):
+        print_document_simple(document)
+        doc_tokens = count_tokens(document.page_content)
+        
+        if total_tokens + doc_tokens <= 3500:
+            processed_docs.append(document.page_content)
+            total_tokens += doc_tokens
+        else:
+            print(f'TRUNCATING CONTEXT at {total_tokens} tokens k={idx}')
+            break
+
+    context_string = "\n\n".join(processed_docs)
+    token_count = count_tokens(context_string)
+    print('context token length: ', token_count)
+    
+    return context_string
 
 async def handle_profile_analysis(
     query: str,
