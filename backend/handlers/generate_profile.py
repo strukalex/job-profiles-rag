@@ -105,7 +105,8 @@ class JobProfileGenerator:
 
         self.rag_prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a job profile assistant. Use the following context to generate job profiles.
-                     Only use information from the provided context."""),
+        Use information from the provided context as necessary. The length of generate profile should be similar based on context. 
+        Do not generate short profiles. Always include some behavioural completencies."""),
         ("user", """Context: {context}
                     
                     User Request: {request}
@@ -520,7 +521,9 @@ class JobProfileGenerator:
             print('threshold: ', results[0][1])
 
 
-        if results and results[0][1] <= self.threshold:
+        # For behavioural competencies, always align, never hallucinate
+        threshold = self.threshold if field_type != "behavioural_competencies" else 1
+        if results and results[0][1] <= threshold:
             content = results[0][0].page_content
             # Extract just the value part after field prefix
             print('REPLACED: ', text)

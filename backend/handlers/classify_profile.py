@@ -71,8 +71,8 @@ Profile to evaluate:
         return (
             RunnablePassthrough.assign(factor=lambda _: factor)
             | self.prompt_template
-            # | self.llm
-            # | self.parser
+            | self.llm
+            | self.parser
         )
 
     async def classify_factor(self, factor, profile, factor_description):

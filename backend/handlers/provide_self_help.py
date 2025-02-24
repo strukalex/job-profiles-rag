@@ -244,6 +244,9 @@ Detect gender-neutral language
 
 Perform competitor analysis
 
+NOTES:
+- Only include technical information if user asks about it
+
             Current query: {query}"""
         )
  

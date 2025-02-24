@@ -11,7 +11,7 @@ class SemanticRouter:
         )
     
     def route(self, query: str):
-        return self.layer(query[:400])
+        return self.layer(query[:250])
     
     def _load_routes(self):
         return [
@@ -62,6 +62,8 @@ class SemanticRouter:
 "analyze similarities between",
 "what skills overlap in",
 "examine patterns across",
+"Which profiles have software development qualities?",
+"which jobs are most fun",
                 ],
                 handler_fn="handlers.coding.process"
             ),
@@ -172,7 +174,28 @@ class SemanticRouter:
                     "classify this profile",
                     "what is the classification for this profile",
                     "can you classify this profile",
-                    "can you classify this profile: "
+                    "can you classify this profile: ",
+                    "Can you classify this profile?",
+                    "determine the classification of this profile",
+"evaluate profile classification level",
+"assess this profile's classification",
+"find appropriate classification grade",
+"suggest classification for this role",
+"analyze profile for classification level",
+"review and classify this job description",
+"provide classification assessment",
+"identify classification category",
+"recommend classification level",
+"determine grade level for this profile",
+"what classification band applies here",
+"evaluate classification band for profile",
+"assign classification to this profile",
+"check classification category",
+"examine profile for classification",
+"calculate classification rating",
+"establish profile classification",
+"derive classification from profile",
+"indicate classification level",
                 ],
                 handler_fn="handlers.coding.process"
             ),
