@@ -207,3 +207,60 @@ docker cp backend/assets/square/favicon.ico open-webui:/app/build/favicon/favico
 
 docker cp backend/assets/square/android-chrome-192x192.png open-webui:/app/build/favicon/favicon-96x96.png
 ```
+
+### To run openwebui with built-in ollama service:
+
+`docker run -d -p 3000:8080 --gpus all -v ollama:/root/.ollama -v open-webui:/app/backend/data --name open-webui-gpu --restart always ghcr.io/open-webui/open-webui:ollama`
+
+Data will be contained in `/root/.ollama/app/backend/data`
+
+Restart ollama:
+
+`taskkill /F /IM "ollama app.exe" /IM ollama.exe`
+`ollama serve`
+
+`ollama list`: See models
+`ollama ps`: Displays currently running models
+`ollama stop`: Stops a running model
+`ollama rm`: Removes a model from the system
+
+To run a new model from HF:
+
+`ollama run hf.co/username/repository`
+
+Enabled mirrored mode in WSL (allows treating localhost to connect to services running on windows):
+
+Add `.wslconfig` in `C:\Users\user_name` with:
+
+```
+[wsl2]
+networkingMode=mirrored
+```
+
+### To run neo4j in docker:
+
+```
+docker run \
+    --name neo4j-db \
+    --publish=7474:7474 --publish=7687:7687 \
+    --volume=$HOME/neo4j/data:/data \
+    --volume=$HOME/neo4j/logs:/logs \
+    --env NEO4J_AUTH=neo4j/your_password \
+    --restart always \
+    neo4j:latest
+```
+
+Then login here: `http://localhost:7474/`
+
+### Enable wrapping in jupyter notebooks in vscode:
+
+Open VS Code Settings (⌘ + , on Mac / Ctrl + , on Windows).
+
+Search for "Notebook > Output: Word Wrap".
+
+Check the box to enable this setting or add to settings.json:
+
+```
+"notebook.output.wordWrap": true
+```
+
