@@ -239,6 +239,7 @@ networkingMode=mirrored
 
 ### To run neo4j in docker:
 
+(just run docker-compose up in /neo-4j instead)
 ```
 docker run \
     --name neo4j-db \
@@ -264,3 +265,31 @@ Check the box to enable this setting or add to settings.json:
 "notebook.output.wordWrap": true
 ```
 
+### To view all keys in neo4j (useful to find which fields to embed)
+
+```
+MATCH (d:Document) 
+RETURN keys(d) LIMIT 1
+```
+
+### To dump neo4j db:
+
+```
+docker run --rm \
+  --user 7474:7474 \
+  -v $HOME/neo4j/data:/data \
+  -v $HOME/neo4j/dumps:/dumps \
+  neo4j:5.26.2 \
+  neo4j-admin database dump neo4j --to-path=/dumps
+```
+
+### To restore from new4j database dump:
+
+```
+docker run --rm \
+  --user 7474:7474 \
+  -v $HOME/neo4j/data:/data \
+  -v $HOME/neo4j/dumps:/dumps \
+  neo4j:5.26.2 \
+  neo4j-admin database load neo4j --from-path=/dumps --force
+  ```
