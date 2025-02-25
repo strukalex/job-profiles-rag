@@ -272,7 +272,7 @@ MATCH (d:Document)
 RETURN keys(d) LIMIT 1
 ```
 
-### To dump neo4j db:
+### To dump neo4j db (ensure db is stopped):
 
 ```
 docker run --rm \
@@ -283,7 +283,9 @@ docker run --rm \
   neo4j-admin database dump neo4j --to-path=/dumps
 ```
 
-### To restore from new4j database dump:
+### To restore from new4j database dump (ensure db is stopped):
+
+`sudo chmod -R 777 neo4j`
 
 ```
 docker run --rm \
@@ -291,5 +293,31 @@ docker run --rm \
   -v $HOME/neo4j/data:/data \
   -v $HOME/neo4j/dumps:/dumps \
   neo4j:5.26.2 \
-  neo4j-admin database load neo4j --from-path=/dumps --force
+  neo4j-admin database load neo4j --from-path=/dumps --overwrite-destination=true
   ```
+
+### See node labels and property distribution in the database
+
+  ```
+  MATCH (n) 
+RETURN labels(n) AS nodeLabels, 
+       keys(n) AS properties, 
+       count(*) AS frequency
+ORDER BY frequency DESC
+```
+
+### To query unstructured data:
+
+```
+MATCH (node)
+WITH node, 1.0 as score
+OPTIONAL MATCH (node)-[r]->(related)
+RETURN coalesce(node.text, node.name) AS text,
+       score,
+       node {.*, labels: labels(node)} AS metadata,
+       collect({relationship: type(r), node: related}) AS graph_context
+```
+
+### For heterogeneous graphs, assign a common secondary label to all nodes while preserving original labels:
+
+`MATCH (n) SET n:Entity`

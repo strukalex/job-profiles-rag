@@ -7,6 +7,7 @@ Jobstore Q&A
 JobStore AI Help
 - `Tell me about yourself`
 - `List what I can do with you?`
+- `How were you built?`
 
 Profiles search:
 - `Which profiles have software development qualities?`
@@ -21,21 +22,14 @@ Profiles search:
 
 Profile generation:
 - `Can you generate a profile for nuclear scientist`
-- `Can you make a profile for a senior full stack developer who works in nursing?`
+- `Can you make a profile for a occupational nurse who is also a senior full stack developer?`
 
-
-Novel (simple):
+Profile graphs:
 - `show chart of job profile views by type`
 - `Show chart of job profile views by job family (top 5)`
 - `Show chart of profile views distribution by organizational type`
 - `make a pie chart of the number of profiles by organization`
 - `show graph of profile creation by month, add readable month names`
-
-- `show graph of profile creation by month`
-- `Show graph of the number of profiles broken down by classification, ordered from highest to lowest, remove labels for classifications (y-axis)`
-- `make a pie chart of the number of profiles by organization`
-- `make a pie chart of the number of profiles by organization, use rainbow theme, include percentage values`
-- `make a pie chart of profiles counts broken down by job family apply normal color scheme, include percentages`
 
 Position request graphs:
 - `Show position request approval trends by month with a line chart`
@@ -95,6 +89,14 @@ INDIGENOUS RELATIONS AND BEHAVIOURAL COMPETENCIES
 ```
 
 - `Now classify that profile using sonnet 3.5 model`
+
+
+Other profile graphs:
+- `show graph of profile creation by month`
+- `Show graph of the number of profiles broken down by classification, ordered from highest to lowest, remove labels for classifications (y-axis)`
+- `make a pie chart of the number of profiles by organization`
+- `make a pie chart of the number of profiles by organization, use rainbow theme, include percentage values`
+- `make a pie chart of profiles counts broken down by job family apply normal color scheme, include percentages`
 
 
 ## Sonnet 3.5 profile analysis

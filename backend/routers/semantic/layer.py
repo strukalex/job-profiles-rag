@@ -281,6 +281,7 @@ class SemanticRouter:
                 name="not_supported",
                 utterances=[
                     "Generate a concise, 3-5 word title with an emoji summarizing the chat history",
+                    "### Task:\nGenerate a concise, 3-5 word title with an emoji summarizing the chat history.\n### Guidelines:\n- The title should clearly represent the main theme or subject of the conversation.\n- Use emojis that enhance understanding of the topic,"
                 ],
                 handler_fn="handlers.coding.process"
             )
