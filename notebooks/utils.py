@@ -5,8 +5,10 @@ from langchain_core.documents import Document
 
 import json
 
+from config.definitions import ROOT_DIR
+
 # PROFILE PER DOCUMENT
-def get_job_profile_documents(csv_path: str) -> List[Document]:
+def get_job_profile_documents(csv_path: str, include_org_class_sections: bool = True) -> List[Document]:
     """Process job profiles CSV and create one document per job profile"""
     df = pd.read_csv(csv_path)
     documents = []
@@ -80,14 +82,18 @@ def get_job_profile_documents(csv_path: str) -> List[Document]:
             "created_at": row.get("created_at", ""),
             "updated_at": row.get("updated_at", ""),
             "row_index": idx,
+            "id": str(row.get("number", "")),
         }
 
         # Build content sections
-        content_sections = [
-            f"Job Profile Title: {metadata['title']}",
-            f"Classifications: {metadata['classifications']}",
-            f"Organizations: {metadata['organizations']}"
-        ]
+        content_sections = [f"Job Profile Title: {metadata['title']}"]
+        
+        # Add classifications and organizations only if they should be included
+        if include_org_class_sections:
+            content_sections.extend([
+                f"Classifications: {metadata['classifications']}",
+                f"Organizations: {metadata['organizations']}"
+            ])
 
         # Array fields to process
         array_fields = {
@@ -136,6 +142,7 @@ def get_job_profile_documents(csv_path: str) -> List[Document]:
 #  Min of Environment & Parks (ENV), Ministry of Infrastructure (INF), Mining and Critical Minerals (MCM), 
 # Agriculture and Food (AGR), Attorney General (AG), ...\n\nSection: Professional Registration Requirements\n")
 def get_job_profile_documents_per_section(csv_path: str) -> List[Document]:
+
     """Process job profiles CSV with pandas and JSON handling"""
     df = pd.read_csv(csv_path)
     documents = []
@@ -229,3 +236,94 @@ Organizations: {organizations}
                     print(f"Row {idx}: Invalid JSON in {field} - {str(e)}")
 
     return documents
+
+
+def get_clean_job_profiles_df():
+    csv_path="../data/job profiles/2025-02-07_profiles.csv"
+    df = pd.read_csv(csv_path)
+
+    for idx, row in df.iterrows():
+        # Process classifications
+        if pd.notna(row.get('classifications')):
+            try:
+                classifications_data = json.loads(row['classifications'])
+                # Create a set to remove duplicates, then convert to sorted list
+                classification_names = sorted(set(item['name'] for item in classifications_data))
+                df.at[idx, 'classifications'] = classification_names
+            except json.JSONDecodeError:
+                df.at[idx, 'classifications'] = []
+
+        # Process organizations
+        if pd.notna(row.get('organizations')):
+            try:
+                organizations_data = json.loads(row['organizations'])
+                # Create a set of tuples (name, code) to remove duplicates
+                org_items = set((item['name'], item['code']) for item in organizations_data)
+                # Format each item and store as list
+                formatted_orgs = [f"{name} ({code})" for name, code in sorted(org_items)]
+                df.at[idx, 'organizations'] = formatted_orgs
+            except json.JSONDecodeError:
+                df.at[idx, 'organizations'] = []
+
+        # Process other JSON fields (role, role_type, scopes)
+        for field in ['role', 'role_type', 'scopes']:
+            if pd.notna(row.get(field)):
+                try:
+                    data = json.loads(row[field])
+                    if field == 'scopes':
+                        # Store as sorted list of unique scope names
+                        scope_names = sorted(set(item["name"] for item in data))
+                        df.at[idx, field] = scope_names
+                    else:
+                        # For role and role_type, store single name as a list with one item
+                        df.at[idx, field] = [data['name']]
+                except json.JSONDecodeError:
+                    df.at[idx, field] = []
+        
+        # Process new fields
+        # Fields that have a name attribute
+        name_fields = ['behavioural_competencies', 'job_families', 'streams', 'reports_to']
+        for field in name_fields:
+            if pd.notna(row.get(field)):
+                try:
+                    data = json.loads(row[field])
+                    names = [item['name'] for item in data]
+                    df.at[idx, field] = names
+                except (json.JSONDecodeError, KeyError):
+                    df.at[idx, field] = []
+        
+        # Fields that have a text attribute
+        text_fields = ['accountabilities', 'education', 'job_experience', 
+                       'professional_registration_requirements', 'preferences',
+                       'knowledge_skills_abilities', 'willingness_statements',
+                       'security_screenings']
+        for field in text_fields:
+            if pd.notna(row.get(field)):
+                try:
+                    data = json.loads(row[field])
+                    texts = [item['text'] for item in data if 'text' in item]
+                    df.at[idx, field] = texts
+                except json.JSONDecodeError:
+                    df.at[idx, field] = []
+        
+        # Handle optional_requirements (special case as it's a dictionary)
+        if pd.notna(row.get('optional_requirements')):
+            try:
+                data = json.loads(row['optional_requirements'])
+                # Convert to list of key-value pairs if not empty
+                if data:
+                    requirements = [f"{key}: {value}" for key, value in data.items()]
+                    df.at[idx, 'optional_requirements'] = requirements
+                else:
+                    df.at[idx, 'optional_requirements'] = []
+            except json.JSONDecodeError:
+                df.at[idx, 'optional_requirements'] = []
+    
+    df['valid_from'] = pd.to_datetime(df['valid_from'], errors='coerce')
+    df['valid_to'] = pd.to_datetime(df['valid_to'], errors='coerce')
+    df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
+    df['updated_at'] = pd.to_datetime(df['updated_at'], errors='coerce')
+    df['published_at'] = pd.to_datetime(df['published_at'], errors='coerce')
+    
+    # Return the modified dataframe
+    return df
