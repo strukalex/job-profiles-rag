@@ -1,0 +1,52 @@
+## Deploy open-webui to openshift
+
+This folder contains two options - base and gpu. We can ignore gpu for now as that is not an option on openshift.
+
+To apply the kustomization files and create the objects in the namespace, run
+
+`` oc apply -k openwebui/base ``
+
+Under Admin Settings -> Connections, add the Ollama API connection as 
+
+http://ollama-service.fd34fb-dev.svc.cluster.local:11434
+
+add custom API connection under Open API connection
+
+
+## Deploy backend RAG API to openshift
+
+
+## Deploy infrastructure 
+
+The API is deployed as a set of openshift objects. To set up the project, simply run
+
+
+`` oc apply -k api/base ``
+
+Given that openwebui configures the api connections in the application, there is not currently a need to create overlays.
+
+## Application deployment
+
+We currently do not have an automated build pipeline so this must be done manually.
+
+The deployments on openshift reference an image-stream, so the general process is to build the image and then push directly there.
+
+### Build
+
+Docker is used for the build process. From the project root folder, simply run
+
+`` docker build -t image-registry.apps.silver.devops.gov.bc.ca/fd34fb-dev/fastapi-app:v1 -f backend/Dockerfile . ``
+
+you can adjust the image tag (after the colon) as necessary.
+
+### Deploy
+
+Ensure you are logged into openshift, and then log into the openshift registry:
+
+`` oc registry login ``
+
+you can then proceed to push it to the image registry
+
+`` docker push image-registry.apps.silver.devops.gov.bc.ca/fd34fb-dev/fastapi-app:v1 ``
+
+If you change the image version, ensure that is reflected in the api deployment definition so that it references the correct image.
