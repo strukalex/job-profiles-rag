@@ -7,7 +7,7 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
@@ -16,6 +16,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 
 from config.definitions import ROOT_DIR
+from .azure_client import get_langchain_azure_model
 
 # Configure image storage
 API_HOST = os.getenv("API_HOST", "http://localhost:8000")
@@ -79,15 +80,15 @@ class ChartGenerator:
 
         self.df = df
 
-        self.llm = AzureAIChatCompletionsModel(
-            endpoint=os.getenv('AZURE_ENDPOINT'),
-            credential=os.getenv('AZURE_API_KEY'),
+        self.llm = get_langchain_azure_model(
             model_name="Mistral-small",
             api_version="2024-05-01-preview",
-            model_kwargs={"max_tokens": 4000},
-            
             temperature=0.5,
-            top_p=0.4
+            top_p=0.4,
+            model_kwargs={
+                "max_tokens": 4000,
+                # "stop": ["\n", "###"]  # Add natural stopping points
+            }
         )
         
         self.parser = JsonOutputParser()
@@ -205,8 +206,12 @@ async def handle_draw_profile_graph(
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:
-    # # Generate plot code through LangChain
+    # The temperature parameter is already set in the ChartGenerator class initialization
+    # and doesn't need to be passed to the chain.invoke method as it's part of the model configuration
     generated_code = await _CHART_GENERATOR.chain.ainvoke({"query": query})
+    
+    if isinstance(generated_code, JSONResponse):
+        return generated_code
     
     # Extract code block
     if "```python" in generated_code.content:
@@ -219,69 +224,13 @@ async def handle_draw_profile_graph(
             code_block = code_parts[1].strip()
     else:
         code_block=generated_code.content
-
-    # code_block="# Split and stack organizations, then reset the index\norgs = df['organizations'].str.split(', ', expand=True).stack().reset_index(level=1, drop=True)\norgs = orgs.to_frame('org')\n\n# Now join will work because both DataFrames share the same index\norg_views = df.join(orgs).groupby('org')['views'].sum()\n\n# Plot the results\norg_views.nlargest(5).plot(kind='barh')\nplt.title('Top 5 Organizations by Total Views')\nplt.xlabel('Total Views')\nplt.tight_layout()"
-    # code_block="plt.figure(figsize=(10,6))\ndf.groupby('role_type')['views'].sum().sort_values().plot(kind='barh')\nplt.title('Total Views by Role Type')\nplt.xlabel('Total Views')\nplt.ylabel('Role Type')\nplt.tight_layout()"
     
     # Create fresh figure and execute code
     plt.figure()
     print('executing code block: ')
     print(code_block)
 
-
-
-    # # Convert created_at to datetime and extract month
-    # df['created_at'] = pd.to_datetime(df['created_at'], unit='ms')
-    # df['month'] = df['created_at'].dt.month
-
-    # # Group data by month and sum views
-    # monthly_views = df.groupby('month')['views'].sum()
-
-    # # Create horizontal bar plot
-    # monthly_views.plot(kind='barh')
-
-    # # Add title and labels
-    # plt.title('Views by Month')
-    # plt.xlabel('Total Views')
-    # plt.ylabel('Month')
-
-    # # Set xticks to show month names
-    # plt.xticks(range(1, 13), calendar.month_name[1:])
-
-    # # Ensure layout is properly spaced
-    # plt.tight_layout()
-
-
-
     _CHART_GENERATOR.execute(code_block)
-
-    
-    # TRY
-    # df=_CHART_GENERATOR.df
-    # # Expand role_type column for better readability if required
-    # df['role_type'] = df['role_type'].str.split(', ')
-
-    # # Group by role_type and sum the views
-    # views_by_role_type = df.groupby('role_type')['views'].sum()
-
-    # # Plot the results as a horizontal bar chart
-    # plt.figure(figsize=(10,6))
-    # views_by_role_type.plot(kind='barh')
-
-    # # Set titles and labels
-    # plt.title('Total Views by Role Type')
-    # plt.xlabel('Total Views')
-    # plt.ylabel('Role Type')
-
-    # # Ensure proper spacing
-    # plt.tight_layout()
-    # END TRY
-
-    # if not success:
-    #     return {
-    #         "error": f"Code execution failed: {error}",
-    #         "generated_code": code_block
-    #     }
     
     # Generate filename and save
     filename = f"plot_{uuid.uuid4().hex[:8]}.png"
@@ -309,10 +258,5 @@ async def handle_draw_profile_graph(
                 "content": f"Generated plot:\n\n![Generated plot]({image_url})"
             },
             "finish_reason": "stop"
-        }],
-        # "usage": {
-        #     "prompt_tokens": len(generated_code.split()),
-        #     "completion_tokens": 0,
-        #     "total_tokens": 0
-        # }
+        }]
     }

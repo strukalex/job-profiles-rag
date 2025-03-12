@@ -8,6 +8,7 @@ A Python application that creates and queries a vector store of job profiles usi
 - Creates embeddings using HuggingFace's all-MiniLM-L6-v2 model
 - Implements efficient batch processing for large datasets
 - Provides similarity search functionality for job profiles
+- Implements daily token limiting for Azure API calls
 
 ## Prerequisites
 
@@ -25,6 +26,31 @@ A Python application that creates and queries a vector store of job profiles usi
 4. Rename .env.sample into sample and set your environment variables
 5. Copy data into the root folder so you have `/data/job profiles/2025-02-07_profiles.csv`
 
+## Token Limiting
+
+The application includes a token limiting system to prevent excessive usage of the Azure API:
+
+- Set the daily token limit using the `AZURE_DAILY_TOKEN_LIMIT` environment variable (default: 100,000)
+- Token usage is tracked and reset daily
+- When the limit is reached, API calls will return a 429 error
+- View current token usage statistics at the `/token-usage` endpoint
+
+### Token Usage Endpoint
+
+```
+GET /token-usage
+```
+
+Response:
+```json
+{
+  "daily_usage": 5000,
+  "daily_limit": 100000,
+  "total_usage": 25000,
+  "remaining_tokens": 95000,
+  "last_reset_date": "2023-06-01"
+}
+```
 
 # Running Open WebUI with local Kubernetes
 
@@ -113,7 +139,7 @@ Add vs code to path in .bashrc:
 
 `export PATH="/mnt/c/Users/<USER_NAME>/AppData/Local/Programs/Microsoft VS Code/bin:$PATH"`
 
-If you get `/usr/bin/env: ‘sh’: No such file or directory`, ensure you have this in .bashrc:
+If you get `/usr/bin/env: 'sh': No such file or directory`, ensure you have this in .bashrc:
 
 `export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH`
 

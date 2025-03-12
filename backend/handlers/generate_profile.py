@@ -1,9 +1,15 @@
-
-
 import json
 import os
 import pprint
 import time
+import calendar
+import matplotlib.pyplot as plt
+import io
+import numpy as np
+import pandas as pd
+from fastapi.responses import FileResponse, JSONResponse
+import uuid
+from pathlib import Path
 
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -24,15 +30,12 @@ from langchain.chains.query_constructor.base import (
     get_query_constructor_prompt,
     AttributeInfo
 )
-import pandas as pd
-
 
 from mistral_common.protocol.instruct.request import ChatCompletionRequest
 from config.definitions import ROOT_DIR
 from langchain_core.documents import Document
 
-from langchain.globals import set_debug
-set_debug(True)
+from .azure_client import get_langchain_azure_model, azure_client
 
 array_fields={
             "accountabilities": "Accountabilities",
@@ -51,10 +54,8 @@ class JobProfileGenerator:
         self.csv_path = csv_path
         self.threshold = threshold
 
-        # It's not "AzureChatOpenAI", or "OpenAI", or "ChatCompletionsClient", it's...
-        self.llm = AzureAIChatCompletionsModel(
-            endpoint=os.getenv('AZURE_ENDPOINT'),
-            credential=os.getenv('AZURE_API_KEY'),
+        # Use our wrapper to get a token-limited model
+        self.llm = get_langchain_azure_model(
             model_name="Mistral-small",
             api_version="2024-05-01-preview",
             model_kwargs={
@@ -62,8 +63,6 @@ class JobProfileGenerator:
                 # "stop": ["\n", "###"]  # Add natural stopping points
             }
         )
-
-        
 
         self.encoder = MistralTokenizer.from_model("mistral-small", strict=True)
 
@@ -319,20 +318,18 @@ class JobProfileGenerator:
 
         # END NEW
 
+        def handle_llm_response(response):
+            if isinstance(response, JSONResponse):
+                return response
+            return self.parser.invoke(response)
+
         self.chain = RunnablePassthrough.assign(
             context=lambda x: self.get_context(x["request"])
-            ) | self.rag_prompt | self.llm | self.parser
+            ) | self.rag_prompt | self.llm | handle_llm_response
 
 
     def count_tokens(self, text: str) -> int:
-        return  len(self.encoder.encode_chat_completion(
-            ChatCompletionRequest(
-                messages=[
-                    UserMessage(content=text)
-                ],
-                model="mistral-small-latest"
-            )
-        ).tokens)
+        return azure_client.count_tokens(text)
 
     def print_document_simple(self, doc):
         print("\n DOCUMENTS: " + "="*80)
@@ -380,33 +377,43 @@ class JobProfileGenerator:
 
         return contextString
 
-    def generate_profile(self, request, phase=2):
+    async def generate_profile(self, request, phase=2):
         # Phase 1: Basic generation
-        generated = self.chain.invoke({
-            "request": request,
-            "format_instructions": self.parser.get_format_instructions()
-        })
+        try:
+            # Use ainvoke instead of invoke to properly use token limiting
+            generated = await self.chain.ainvoke({
+                "request": request,
+                "format_instructions": self.parser.get_format_instructions()
+            })
 
-        print('generated from request: ', request)
-        print(generated)
-        
-        if phase == 1:
-            return generated
-        
-        # Phase 2: Semantic alignment with existing data
-        aligned = {}
-        for field, value in generated.items():
-            if isinstance(value, list):
-                aligned[field] = [
-                    self._find_exact_match(item, field) or item
-                    for item in value
-                ]
-            else:
-                # existing = self._find_exact_match(value, field)
-                # aligned[field] = existing or value
-                aligned[field] = value
-        
-        return aligned
+            if isinstance(generated, JSONResponse):
+                return generated
+
+            print('generated from request: ', request)
+            print(generated)
+            
+            if phase == 1:
+                return generated
+            
+            # Phase 2: Semantic alignment with existing data
+            aligned = {}
+            for field, value in generated.items():
+                if isinstance(value, list):
+                    aligned[field] = [
+                        self._find_exact_match(item, field) or item
+                        for item in value
+                    ]
+                else:
+                    aligned[field] = value
+            
+            return aligned
+            
+        except Exception as e:
+            print(f"Error in generate_profile: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": f"Failed to generate profile: {str(e)}"}
+            )
 
     
     # def _process_csv_with_pandas(self):
@@ -545,10 +552,13 @@ async def handle_generate_profile(
     generator = _GENERATOR
 
     # Phase 1 usage
-    result_json = generator.generate_profile(
+    result_json = await generator.generate_profile(
         query,
         phase=2
     )
+
+    if isinstance(result_json, JSONResponse):
+        return result_json
     
     # Convert JSON to markdown
     def json_to_markdown(data):

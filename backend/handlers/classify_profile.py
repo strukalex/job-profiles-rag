@@ -7,28 +7,30 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
+
+from config.definitions import ROOT_DIR
+from .azure_client import get_langchain_azure_model
 
 # Define the factors
 FACTORS = [
     "factor1","factor2","factor3","factor4","factor5","factor6","factor7","factor8","factor9","factor10","factor11","factor12","factor13"
 ]
 
-class FactorClassifier:
+class ClassificationProvider:
     def __init__(self):
-        self.llm = AzureAIChatCompletionsModel(
-            endpoint=os.getenv('AZURE_ENDPOINT'),
-            credential=os.getenv('AZURE_API_KEY'),
+        self.llm = get_langchain_azure_model(
             model_name="Mistral-small",
             api_version="2024-05-01-preview",
-            # model_kwargs={"max_tokens": 1000},
-            # temperature=0.2
+            model_kwargs={
+                "max_tokens": 8000,
+                # "stop": ["\n", "###"]  # Add natural stopping points
+            }
         )
         
         self.parser = JsonOutputParser()
@@ -68,11 +70,16 @@ Profile to evaluate:
         self.chains = {factor: self.create_chain(factor) for factor in FACTORS}
 
     def create_chain(self, factor):
+        def handle_llm_response(response):
+            if isinstance(response, JSONResponse):
+                return response
+            return self.parser.invoke(response)
+        
         return (
             RunnablePassthrough.assign(factor=lambda _: factor)
             | self.prompt_template
             | self.llm
-            | self.parser
+            | handle_llm_response
         )
 
     async def classify_factor(self, factor, profile, factor_description):
@@ -83,11 +90,19 @@ Profile to evaluate:
         return {factor: result}
 
     async def classify_all_factors(self, profile):
+        
         tasks = [
             self.classify_factor(factor, profile, self.factor_descriptions[factor])
             for factor in FACTORS
         ]
         results = await asyncio.gather(*tasks)
+
+        # Return first JSONResponse found, if any
+        for result in results:
+            for factor_result in result.values():
+                if isinstance(factor_result, JSONResponse):
+                    return factor_result
+                
         return {k: v for d in results for k, v in d.items()}
     
     def load_factor_descriptions(self):
@@ -101,7 +116,7 @@ Profile to evaluate:
 
 # Initialize with your DataFrame
 
-_FACTOR_CLASSIFIER = FactorClassifier()
+_FACTOR_CLASSIFIER = ClassificationProvider()
 
 factor_weights = {
         'factor1': {'A': 20, 'B': 40, 'C': 60, 'D': 100, 'E': 145, 'F': 190, 'G': 250, 'H': 280, 'I': 305, 'J': 330},
@@ -196,6 +211,9 @@ async def handle_classify_profile(
         # benchmarks = load_benchmarks()  # Implement this function to load benchmarks
         
         results = await _FACTOR_CLASSIFIER.classify_all_factors(profile)
+
+        if isinstance(results, JSONResponse):
+            return results
     else:
 
         # results = {

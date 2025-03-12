@@ -6,23 +6,21 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 
 from config.definitions import ROOT_DIR
+from .azure_client import get_langchain_azure_model
 
 
 class HelpProvider:
     def __init__(self):
         
-        self.llm = AzureAIChatCompletionsModel(
-            endpoint=os.getenv('AZURE_ENDPOINT'),
-            credential=os.getenv('AZURE_API_KEY'),
+        self.llm = get_langchain_azure_model(
             model_name="Mistral-small",
             api_version="2024-05-01-preview",
             model_kwargs={
@@ -36,7 +34,7 @@ class HelpProvider:
              Accessing Job Store
  
 How do I access Job Store?
-If you’re a people leader, there is a new tile on your Manager Self-Service dashboard that will launch Job Store. Updated links to the new Job Store are also available on Careers & MyHR.
+If you're a people leader, there is a new tile on your Manager Self-Service dashboard that will launch Job Store. Updated links to the new Job Store are also available on Careers & MyHR.
  
 What access do I have?
 Excluded people leaders can create new positions in their department ID. Included people leaders can request access to create positions with approval from their ministry HR lead. Follow your internal ministry process for this. All employees have access to explore the job profiles on Job Store.
@@ -44,7 +42,7 @@ Excluded people leaders can create new positions in their department ID. Include
 Creating new positions in Job Store
  
 Have Classification and Exclusion Services changed?
-No. The BC Public Service Agency’s Classification and Exclusion Services continue to provide classification, exclusion and organizational design expertise and services. The job classification process has not changed. The process for creating a new position using pre-approved and pre-classified job profiles has been significantly streamlined through digital self-service using the new Job Store.
+No. The BC Public Service Agency's Classification and Exclusion Services continue to provide classification, exclusion and organizational design expertise and services. The job classification process has not changed. The process for creating a new position using pre-approved and pre-classified job profiles has been significantly streamlined through digital self-service using the new Job Store.
  
 Have the classification frameworks changed?
 No. The classification frameworks such as Public Service Job Evaluation Plan (PSJEP) and Management Classification and Compensation Framework (PDF, 287 KB) are the same.
@@ -60,8 +58,8 @@ If the profile requires verification or changes are made to a job profile that m
 
  
 What job profiles can I use in the application?
-Job Store is pre-populated with pre-approved generic job profiles that are common across the BC Public Service or a specific ministry. The application then further filters the job profiles by the classification levels appropriate for the reporting relationship. The positions shown when you’re creating a new position are only the ones pre-approved, generic and meeting the reporting requirements.
-Job Store populates the relevant job profiles reporting to the people leader selected. You can’t use job profiles for positions or job types that don’t currently report to the people leader selected.
+Job Store is pre-populated with pre-approved generic job profiles that are common across the BC Public Service or a specific ministry. The application then further filters the job profiles by the classification levels appropriate for the reporting relationship. The positions shown when you're creating a new position are only the ones pre-approved, generic and meeting the reporting requirements.
+Job Store populates the relevant job profiles reporting to the people leader selected. You can't use job profiles for positions or job types that don't currently report to the people leader selected.
 
  
 Are all job profiles in Job Store available for automatic position number creation?
@@ -80,7 +78,7 @@ No. Any new excluded positions must go through an initial exclusion viability re
 
 Verification
  
-What does ‘verification required’ mean?
+What does 'verification required' mean?
 There are two scenarios where verification by the Classification and Exclusion Services team may be required before creating a new position using a Job Store profile:
 
 Scenario 1: You have made edits to accountabilities that may impact classification. Alert pop-ups in Job Store will let you know when you are making significant edits. In this scenario, Classification and Exclusion Services verify whether edits impact classification and if a classification review is required
@@ -94,10 +92,10 @@ Yes. When you submit your position request and verification is required, it auto
 
  
 Does Job Store create position numbers?
-Yes. Job Store is fully integrated with PeopleSoft and can create position numbers when you click ‘generate’.
+Yes. Job Store is fully integrated with PeopleSoft and can create position numbers when you click 'generate'.
 
  
-Can I create a net new position using a job profile that isn’t in Job Store?
+Can I create a net new position using a job profile that isn't in Job Store?
 No. The application is for pre-approved and pre-classified job profiles only. If you want to duplicate a position you already have, please submit an AskMyHR service request using the category Job Classification > Create a New Position.
 
 Job profiles
@@ -114,7 +112,7 @@ How is the classification framework being used in Job Store?
 All profiles in Job Store have been classified based on existing classification frameworks such as Public Service Job Evaluation Plan and Management Classification and Compensation Framework (PDF, 287KB).
 
  
-What if I don’t see the job profile I want on Job Store?
+What if I don't see the job profile I want on Job Store?
 Please contact Classification and Exclusion Services via AskMyHR using the category Job Classification > Create a New Position). They may:
 
 Know of other job profiles under development but not yet published that may help you
@@ -136,7 +134,7 @@ It says Job Store is for new positions only. What do I do if I want to reclassif
 Please submit a service request for a classification review to Classification and Exclusion Services via AskMyHR (Job Classification > Classification Review). The reclassification process remains the same. Visit Classification Review Process on Careers & MyHR for more information.
 
  
-What does ‘positions may be audited’ mean?
+What does 'positions may be audited' mean?
 Positions automatically created through Job Store may be selected at random for audit. The purpose of auditing is to ensure the specified context for each job profile is met. During the audit, you may be asked for work examples for the topic position.
 
  
@@ -156,7 +154,7 @@ Navigate to the 'Actions' tab
 Click on the 'Download' link in the 'Approved job profile' row to download the Word document
  
 Can I download the organization chart?
-Yes. To download the organization chart, click on the ‘Download’ button on the right side of the chart to download a PNG or SVG file.
+Yes. To download the organization chart, click on the 'Download' button on the right side of the chart to download a PNG or SVG file.
 
  
 Can I download job profiles?
@@ -193,6 +191,9 @@ async def handle_provide_help(
     # # Generate plot code through LangChain
     response = await _HELP_PROVIDER.chain.ainvoke({"query": query})
     
+    if isinstance(response, JSONResponse):
+        return response
+
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex[:8]}",
         "object": "chat.completion",

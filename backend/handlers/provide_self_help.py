@@ -6,23 +6,21 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 
 from config.definitions import ROOT_DIR
+from .azure_client import get_langchain_azure_model
 
 
 class SelfHelpProvider:
     def __init__(self):
         
-        self.llm = AzureAIChatCompletionsModel(
-            endpoint=os.getenv('AZURE_ENDPOINT'),
-            credential=os.getenv('AZURE_API_KEY'),
+        self.llm = get_langchain_azure_model(
             model_name="Mistral-small",
             api_version="2024-05-01-preview",
             model_kwargs={
@@ -267,6 +265,9 @@ async def handle_provide_self_help(
 ) -> dict:
     # # Generate plot code through LangChain
     response = await _SELF_HELP_PROVIDER.chain.ainvoke({"query": query})
+    # Check if response is a JSONResponse
+    if isinstance(response, JSONResponse):
+        return response
     
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex[:8]}",

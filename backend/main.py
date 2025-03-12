@@ -10,13 +10,28 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import time
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+import logging
+from fastapi import FastAPI, HTTPException, Body
+from fastapi.responses import JSONResponse, PlainTextResponse
 import uvicorn
 from routers.openai.router import router as openai_router
+from handlers.token_limiter import token_limiter
+from handlers.azure_client import azure_client
+from utils.logging_config import setup_logging
 
+from langchain.globals import set_debug
+set_debug(True)
 
+# Set up logging using centralized configuration
+setup_logging()
+logger = logging.getLogger('main')
 
+# Initialize token usage data
+try:
+    stats = token_limiter.get_usage_stats()
+    logger.info(f"Token usage initialized: {stats}")
+except Exception as e:
+    logger.error(f"Error initializing token usage: {e}")
 
 app = FastAPI()
 
@@ -39,6 +54,13 @@ async def list_models():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/token-usage")
+async def token_usage():
+    """Get current token usage statistics."""
+    try:
+        return token_limiter.get_usage_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Get the directory where main.py is located
 BASE_DIR = Path(__file__).resolve().parent

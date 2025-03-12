@@ -177,3 +177,4 @@ job_profiles_db/chroma.sqlite3
 /job_profiles_db
 /job_profiles_db2
 backend/static
+backend/assets/token_usage.json

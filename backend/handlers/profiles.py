@@ -3,15 +3,15 @@ from typing import List, Optional
 import os
 import time
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-from azure.ai.inference import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
 from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
 from mistral_common.protocol.instruct.request import ChatCompletionRequest
 from mistral_common.protocol.instruct.messages import UserMessage
 import asyncio
 
+from .azure_client import azure_client
 
 
 # Initialize components
@@ -25,25 +25,15 @@ vectorstore = Chroma(
     collection_name="job_profiles"
 )
 
-client = ChatCompletionsClient(
-    endpoint=os.getenv('AZURE_ENDPOINT'),
-    credential=AzureKeyCredential(os.getenv('AZURE_API_KEY')),
-    model="Mistral-small"
-)
-
+# Use the encoder from our Azure client wrapper
 encoder = MistralTokenizer.from_model("mistral-small", strict=True)
 
 def count_tokens(text: str) -> int:
-    return len(encoder.encode_chat_completion(
-        ChatCompletionRequest(
-            messages=[UserMessage(content=text)],
-            model="mistral-small-latest"
-        )
-    ).tokens)
+    return azure_client.count_tokens(text)
 
 def print_document_simple(doc):
     """Print document details"""
-    print("\n DOCUMENT: " + "="*80)
+    print("\n DOCUMENTS: " + "="*80)
     print("-"*80)
     print(doc.page_content)
     print("="*80 + "\n")
@@ -97,12 +87,16 @@ async def handle_profile_analysis(
             f"Assistant: "
         )
         
-        response = client.complete(
+        # Use our Azure client wrapper with token limiting
+        response = azure_client.complete(
             messages=[{"role": "user", "content": prompt_template}],
             max_tokens=max_tokens,
             temperature=temperature,
         )
 
+        if isinstance(response, JSONResponse):
+            return response
+    
         return {
             "id": "chatcmpl-" + os.urandom(4).hex(),
             "object": "chat.completion",

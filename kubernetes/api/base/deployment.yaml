@@ -30,6 +30,11 @@ spec:
                 secretKeyRef:
                   name: azure-secrets
                   key: AZURE_API_KEY
+            - name: AZURE_DAILY_TOKEN_LIMIT
+              valueFrom:
+                secretKeyRef:
+                  name: azure-secrets
+                  key: AZURE_DAILY_TOKEN_LIMIT
             - name: TRANSFORMERS_CACHE
               value: /app/cache
           volumeMounts:
@@ -37,6 +42,10 @@ spec:
               mountPath: /app/job_profiles_db
             - name: api-cache
               mountPath: /app/cache
+            - name: api-logs
+              mountPath: /app/backend/logs
+            - name: api-assets
+              mountPath: /app/backend/assets
 
       volumes:
         - name: job-profiles-db
@@ -45,3 +54,7 @@ spec:
         - name: api-cache
           persistentVolumeClaim:
             claimName: api-cache-pvc
+        - name: api-logs
+          emptyDir: {}
+        - name: api-assets
+          emptyDir: {}

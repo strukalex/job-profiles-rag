@@ -39,6 +39,12 @@ Docker is used for the build process. From the project root folder, simply run
 
 you can adjust the image tag (after the colon) as necessary.
 
+To test it out locally before deploying:
+
+`docker run --env-file ./.env -d -p 8000:8000 --name fastapi-container image-registry.apps.silver.devops.gov.bc.ca/fd34fb-dev/fastapi-app:v1`
+
+(in OpenWebUI add `http://localhost:8000` to OpenAI API connections)
+
 ### Deploy
 
 Ensure you are logged into openshift, and then log into the openshift registry:
