@@ -6,7 +6,7 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
@@ -21,11 +21,12 @@ class HelpProvider:
     def __init__(self):
         
         self.llm = get_langchain_azure_model(
-            model_name="Mistral-small",
+            model_name=os.getenv('MODEL_NAME'),
             api_version="2024-05-01-preview",
             model_kwargs={
                 "max_tokens": 8000,
                 # "stop": ["\n", "###"]  # Add natural stopping points
+                "stream": True
             }
         )
         
@@ -184,13 +185,13 @@ _HELP_PROVIDER = HelpProvider()
 
 async def handle_provide_help(
     query: str,
-    model: str = "Mistral-small",
+    model: str = os.getenv('MODEL_NAME'),
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:
     # # Generate plot code through LangChain
     response = await _HELP_PROVIDER.chain.ainvoke({"query": query})
-    
+
     if isinstance(response, JSONResponse):
         return response
 
@@ -208,3 +209,68 @@ async def handle_provide_help(
             "finish_reason": "stop"
         }],
     }
+
+
+async def handle_provide_help_stream(
+    query: str,
+    model: str = os.getenv('MODEL_NAME'),
+    temperature: float = 0.7,
+    max_tokens: int = 300
+):
+    # Create an async generator that yields formatted chunks
+    async def generate_stream():
+        # Create response header in OpenAI format
+        response_id = f"chatcmpl-{uuid.uuid4().hex[:8]}"
+        created_time = int(time.time())
+        
+        # Send the initial response data
+        yield f"data: {json.dumps({'id': response_id, 'object': 'chat.completion.chunk', 'created': created_time, 'model': model, 'choices': [{'index': 0, 'delta': {'role': 'assistant'}, 'finish_reason': None}]})}\n\n"
+        
+        # Stream the response content
+        async for chunk in _HELP_PROVIDER.chain.astream({"query": query}):
+            if hasattr(chunk, 'content'):
+                content = chunk.content
+            else:
+                content = chunk
+                
+            # Format each chunk in OpenAI's streaming format
+            json_data = {
+                'id': response_id,
+                'object': 'chat.completion.chunk',
+                'created': created_time,
+                'model': model,
+                'choices': [
+                    {
+                        'index': 0,
+                        'delta': {'content': content},
+                        'finish_reason': None
+                    }
+                ]
+            }
+            # Then format the string
+            yield f"data: {json.dumps(json_data)}\n\n"
+        
+        # Send the final [DONE] message
+        final_json_data = {
+            'id': response_id,
+            'object': 'chat.completion.chunk',
+            'created': created_time,
+            'model': model,
+            'choices': [
+                {
+                    'index': 0,
+                    'delta': {},
+                    'finish_reason': 'stop'
+                }
+            ]
+        }
+        # Then format the string
+        yield f"data: {json.dumps(final_json_data)}\n\n"
+        
+        yield "data: [DONE]\n\n"
+    
+    # Return a streaming response
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream"
+    )

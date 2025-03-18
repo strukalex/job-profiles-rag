@@ -185,7 +185,22 @@ Add data folder to the root directory, so you have `/data/job profiles/2025-02-0
 ## Open WebUI in docker
 To run open webui in docker such that it can connect to api running on localhost:
 
-`docker run -d -p 3000:8080   --add-host=host.docker.internal:host-gateway   -e OPENAI_API_BASE_URL=http://host.docker.internal:8000   -v open-webui:/app/backend/data   --name open-webui   --restart always   ghcr.io/open-webui/open-webui:main`
+```
+docker run -d -p 3000:8080 \
+  --add-host=host.docker.internal:host-gateway \
+  -e OPENAI_API_BASE_URL=http://host.docker.internal:8000 \
+  -e ENABLE_OAUTH_SIGNUP="true" \
+  -e OAUTH_CLIENT_ID="xxxxx" \
+  -e OAUTH_CLIENT_SECRET="xxxxx" \
+  -e OPENID_PROVIDER_URL="https://dev.loginproxy.gov.bc.ca/auth/realms/standard/.well-known/openid-configuration" \
+  -e OAUTH_PROVIDER_NAME="Keycloak" \
+  -e OAUTH_AUTO_SIGNUP="true" \
+  -e OAUTH_MERGE_ACCOUNTS_BY_EMAIL="true" \
+  -v open-webui:/app/backend/data \
+  --name open-webui \
+  --restart always \
+  ghcr.io/open-webui/open-webui:main
+```
 
 In open webui set api url to:
 

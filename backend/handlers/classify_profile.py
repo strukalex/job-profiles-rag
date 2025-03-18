@@ -25,7 +25,7 @@ FACTORS = [
 class ClassificationProvider:
     def __init__(self):
         self.llm = get_langchain_azure_model(
-            model_name="Mistral-small",
+            model_name=os.getenv('MODEL_NAME'),
             api_version="2024-05-01-preview",
             model_kwargs={
                 "max_tokens": 8000,
@@ -198,7 +198,7 @@ def format_factor_results(results):
 
 async def handle_classify_profile(
     query: str,
-    model: str = "Mistral-small",
+    model: str = os.getenv('MODEL_NAME'),
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:

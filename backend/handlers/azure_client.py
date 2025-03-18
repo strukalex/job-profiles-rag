@@ -33,7 +33,7 @@ class AzureClientWrapper:
         self.client = ChatCompletionsClient(
             endpoint=self.endpoint,
             credential=AzureKeyCredential(self.api_key),
-            model="Mistral-small"
+            model=os.getenv('MODEL_NAME')
         )
         
         # Initialize the tokenizer for counting tokens
@@ -144,7 +144,7 @@ class AzureClientWrapper:
 azure_client = AzureClientWrapper()
 logger.info("AzureClientWrapper singleton instance created")
 
-def get_langchain_azure_model(model_name="Mistral-small", api_version="2024-05-01-preview", temperature=0.7, top_p=None, **kwargs):
+def get_langchain_azure_model(model_name=os.getenv('MODEL_NAME'), api_version="2024-05-01-preview", temperature=0.7, top_p=None, **kwargs):
     """
     Get a LangChain Azure AI Chat Completions Model with token limiting.
     

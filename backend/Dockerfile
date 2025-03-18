@@ -2,8 +2,6 @@ FROM ubuntu:22.04
 
 WORKDIR /app
 
-COPY . .
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
@@ -30,8 +28,13 @@ RUN pip install --no-cache-dir \
     --force-reinstall \
     "llama-cpp-python==0.2.85"
 
+
+COPY requirements.txt .
+
 # Install other requirements
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
 
 ENV PYTHONPATH=/app/backend
 

@@ -56,7 +56,7 @@ class JobProfileGenerator:
 
         # Use our wrapper to get a token-limited model
         self.llm = get_langchain_azure_model(
-            model_name="Mistral-small",
+            model_name=os.getenv('MODEL_NAME'),
             api_version="2024-05-01-preview",
             model_kwargs={
                 "max_tokens": 8000,
@@ -544,7 +544,7 @@ _GENERATOR = JobProfileGenerator("job profiles/2025-02-07_profiles.csv")
 
 async def handle_generate_profile(
     query: str,
-    model: str = "Mistral-small",
+    model: str = os.getenv('MODEL_NAME'),
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:

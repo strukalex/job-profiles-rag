@@ -21,7 +21,7 @@ class SelfHelpProvider:
     def __init__(self):
         
         self.llm = get_langchain_azure_model(
-            model_name="Mistral-small",
+            model_name=os.getenv('MODEL_NAME'),
             api_version="2024-05-01-preview",
             model_kwargs={
                 "max_tokens": 8000,
@@ -169,7 +169,7 @@ class FactorClassifier:
         self.llm = AzureAIChatCompletionsModel(
             endpoint=os.getenv('AZURE_ENDPOINT'),
             credential=os.getenv('AZURE_API_KEY'),
-            model_name="Mistral-small"
+            model_name=os.getenv('MODEL_NAME')
         )
 The system evaluates 13 distinct factors for job classification1:
 
@@ -209,7 +209,7 @@ class ChartGenerator:
         self.llm = AzureAIChatCompletionsModel(
             endpoint=os.getenv('AZURE_ENDPOINT'),
             credential=os.getenv('AZURE_API_KEY'),
-            model_name="Mistral-small"
+            model_name=os.getenv('MODEL_NAME')
         )
 Supports various visualization types:
 
@@ -259,7 +259,7 @@ _SELF_HELP_PROVIDER = SelfHelpProvider()
 
 async def handle_provide_self_help(
     query: str,
-    model: str = "Mistral-small",
+    model: str = os.getenv('MODEL_NAME'),
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:

@@ -71,7 +71,7 @@ async def get_context(query: str, k: int = 3):
 
 async def handle_profile_analysis(
     query: str,
-    model: str = "Mistral-small",
+    model: str = os.getenv('MODEL_NAME'),
     temperature: float = 0.7,
     max_tokens: int = 300
 ) -> dict:
