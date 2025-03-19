@@ -10,9 +10,9 @@ from backend.handlers.classify_profile import handle_classify_profile
 from backend.handlers.draw_pr_graph import handle_draw_pr_graph
 from backend.handlers.draw_profiles_graph import handle_draw_profile_graph
 from backend.handlers.provide_help import handle_provide_help, handle_provide_help_stream
-from backend.handlers.provide_self_help import handle_provide_self_help
+from backend.handlers.provide_self_help import handle_provide_self_help, handle_provide_self_help_stream
 from handlers.generate_profile import handle_generate_profile
-from handlers.profiles import handle_profile_analysis
+from handlers.profiles import handle_profile_analysis, handle_profile_analysis_stream
 from ..semantic.layer import route_layer
 from backend.auth.api_key import get_current_user, User, security_scheme
 
@@ -40,12 +40,13 @@ async def chat_completion(request: ChatCompletionRequest, user: User = Security(
     print('ROUTING TO: ', route)
 
     if route.name == "profile_search":
-        return await handle_profile_analysis(
+        return await handle_profile_analysis_stream(
             query=query,
             model=request.model,
             temperature=request.temperature,
             max_tokens=request.max_tokens
         )
+
     elif route.name == "generate_profile":
         return await handle_generate_profile(
             query=query,
@@ -53,7 +54,9 @@ async def chat_completion(request: ChatCompletionRequest, user: User = Security(
             temperature=request.temperature,
             max_tokens=request.max_tokens
         )
+
     elif route.name == "draw_profiles_graph":
+        # No streaming for graph endpoints as requested
         return await handle_draw_profile_graph(
             query=query,
             model=request.model,
@@ -61,6 +64,7 @@ async def chat_completion(request: ChatCompletionRequest, user: User = Security(
             max_tokens=request.max_tokens
         )
     elif route.name == "draw_pr_graph":
+        # No streaming for graph endpoints as requested
         return await handle_draw_pr_graph(
             query=query,
             model=request.model,
@@ -68,6 +72,7 @@ async def chat_completion(request: ChatCompletionRequest, user: User = Security(
             max_tokens=request.max_tokens
         )
     elif route.name == "classify_profile":
+        # No streaming for classification endpoint as requested
         return await handle_classify_profile(
             query=query,
             model=request.model,
@@ -82,12 +87,13 @@ async def chat_completion(request: ChatCompletionRequest, user: User = Security(
             max_tokens=request.max_tokens
         )
     elif route.name == "provide_self_help":
-        return await handle_provide_self_help(
+        return await handle_provide_self_help_stream(
             query=query,
             model=request.model,
             temperature=request.temperature,
             max_tokens=request.max_tokens
         )
+
     else:
         return {
             "id": "chatcmpl-" + os.urandom(4).hex(),

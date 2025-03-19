@@ -6,7 +6,7 @@ import io
 import numpy as np
 import os
 import pandas as pd
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 import uuid
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
@@ -283,3 +283,68 @@ async def handle_provide_self_help(
             "finish_reason": "stop"
         }],
     }
+
+async def handle_provide_self_help_stream(
+    query: str,
+    model: str = os.getenv('MODEL_NAME'),
+    temperature: float = 0.7,
+    max_tokens: int = 300
+):
+    """Handle system self-help queries with streaming response"""
+    # Create an async generator that yields formatted chunks
+    async def generate_stream():
+        # Create response header in OpenAI format
+        response_id = f"chatcmpl-{uuid.uuid4().hex[:8]}"
+        created_time = int(time.time())
+        
+        # Send the initial response data
+        yield f"data: {json.dumps({'id': response_id, 'object': 'chat.completion.chunk', 'created': created_time, 'model': model, 'choices': [{'index': 0, 'delta': {'role': 'assistant'}, 'finish_reason': None}]})}\n\n"
+        
+        # Stream the response content
+        async for chunk in _SELF_HELP_PROVIDER.chain.astream({"query": query}):
+            if hasattr(chunk, 'content'):
+                content = chunk.content
+            else:
+                content = chunk
+                
+            # Format each chunk in OpenAI's streaming format
+            json_data = {
+                'id': response_id,
+                'object': 'chat.completion.chunk',
+                'created': created_time,
+                'model': model,
+                'choices': [
+                    {
+                        'index': 0,
+                        'delta': {'content': content},
+                        'finish_reason': None
+                    }
+                ]
+            }
+            # Then format the string
+            yield f"data: {json.dumps(json_data)}\n\n"
+        
+        # Send the final [DONE] message
+        final_json_data = {
+            'id': response_id,
+            'object': 'chat.completion.chunk',
+            'created': created_time,
+            'model': model,
+            'choices': [
+                {
+                    'index': 0,
+                    'delta': {},
+                    'finish_reason': 'stop'
+                }
+            ]
+        }
+        # Then format the string
+        yield f"data: {json.dumps(final_json_data)}\n\n"
+        
+        yield "data: [DONE]\n\n"
+    
+    # Return a streaming response
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream"
+    )
